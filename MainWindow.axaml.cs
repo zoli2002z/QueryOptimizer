@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using Avalonia.Input;
 using Avalonia.Controls;
+using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 
 namespace QueryOptimizer;
 
@@ -11,6 +13,43 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        //Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://QueryOptimizer/logo/query_optimizer_logo.png")));
+    }
+
+    private async void SelectSqlFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Select SQL file",
+            AllowMultiple = false,
+            FileTypeFilter = new[]
+            {
+                new FilePickerFileType("SQL files") { Patterns = new[] { "*.sql" } },
+                FilePickerFileTypes.All
+            }
+        });
+
+        var file = files.FirstOrDefault();
+        if (file is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await using var stream = await file.OpenReadAsync();
+            using var reader = new StreamReader(stream);
+            InputQueryEditor.Text = await reader.ReadToEndAsync();
+            StatusText.Text = $"Loaded {file.Name}";
+        }
+        catch (IOException)
+        {
+            StatusText.Text = $"Could not read {file.Name}";
+        }
+        catch (UnauthorizedAccessException)
+        {
+            StatusText.Text = $"Access denied for {file.Name}";
+        }
     }
 
     private void InputQuery_DragOver(object? sender, DragEventArgs e)

@@ -50,11 +50,14 @@
                                        Foreground="#687771"
                                        FontSize="12" />
                         </StackPanel>
-                        <Button Grid.Column="1"
-                                Content="Optimize SQL"
-                                IsEnabled="False"
-                                VerticalAlignment="Center"
-                                ToolTip.Tip="The optimization engine has not been implemented yet." />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Button Content="Select file"
+                                    Click="SelectSqlFile_Click"
+                                    ToolTip.Tip="Open a .sql file" />
+                            <Button Content="Optimize SQL"
+                                    IsEnabled="False"
+                                    ToolTip.Tip="The optimization engine has not been implemented yet." />
+                        </StackPanel>
                     </Grid>
                     <Border Grid.Row="1" BorderBrush="#E1E7E3" BorderThickness="0,1,0,0">
                         <TextBox x:Name="InputQueryEditor"
@@ -68,7 +71,7 @@
                                  BorderThickness="0"
                                  Background="#FFFFFF"
                                  Foreground="#263B35"
-                                 Text="SELECT c.CustomerId, c.Name, o.OrderDate, o.Total&#x0a;FROM Customers AS c&#x0a;INNER JOIN Orders AS o ON c.CustomerId = o.CustomerId&#x0a;WHERE o.OrderDate &gt;= '2025-01-01'&#x0a;ORDER BY o.OrderDate DESC;" />
+                                 PlaceholderText="Place for the SQL select" />
                     </Border>
                 </Grid>
             </Border>
