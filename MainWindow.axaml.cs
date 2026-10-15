@@ -13,7 +13,6 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        //Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://QueryOptimizer/logo/query_optimizer_logo.png")));
     }
 
     private async void SelectSqlFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -86,5 +85,26 @@ public partial class MainWindow : Window
         {
             StatusText.Text = $"Access denied for {file.Name}";
         }
+    }
+
+    private void OptimizeSql_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var query = InputQueryEditor.Text;
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            StatusText.Text = "Enter a query to optimize";
+            return;
+        }
+
+        var optimizedQuery = SqlOptimizer.Optimize(query);
+        var findings = SqlOptimizer.Analyze(query);
+
+        OptimizedQueryEditor.Text = optimizedQuery;
+        OptimizationFindings.Text = string.Join(Environment.NewLine + Environment.NewLine, findings);
+
+        var changed = !string.Equals(query, optimizedQuery, StringComparison.Ordinal);
+        StatusText.Text = changed
+            ? $"Applied rewrite rules; found {findings.Count} performance note(s)"
+            : $"No safe rewrite applied; found {findings.Count} performance note(s)";
     }
 }

@@ -55,8 +55,8 @@
                                     Click="SelectSqlFile_Click"
                                     ToolTip.Tip="Open a .sql file" />
                             <Button Content="Optimize SQL"
-                                    IsEnabled="False"
-                                    ToolTip.Tip="The optimization engine has not been implemented yet." />
+                                    Click="OptimizeSql_Click"
+                                    ToolTip.Tip="Apply the available SQL rewrite rules" />
                         </StackPanel>
                     </Grid>
                     <Border Grid.Row="1" BorderBrush="#E1E7E3" BorderThickness="0,1,0,0">
@@ -96,21 +96,33 @@
                             BorderBrush="#E1E7E3"
                             BorderThickness="0,1,0,0"
                             Background="#F8FAF8">
-                        <StackPanel HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    Spacing="8">
-                            <TextBlock Text="No optimized query"
-                                       Foreground="#29463F"
-                                       FontSize="16"
-                                       FontWeight="SemiBold"
-                                       HorizontalAlignment="Center" />
-                            <TextBlock Text="The optimization pipeline will be added here."
-                                       Foreground="#687771"
+                      <Grid RowDefinitions="*,160">
+                        <TextBox x:Name="OptimizedQueryEditor"
+                                 IsReadOnly="True"
+                                 AcceptsReturn="True"
+                                 TextWrapping="NoWrap"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                 FontFamily="Cascadia Mono,Consolas,monospace"
+                                 FontSize="13"
+                                 Padding="18"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 Foreground="#263B35"
+                                 PlaceholderText="No optimized query" />
+                        <Border Grid.Row="1"
+                                BorderBrush="#E1E7E3"
+                                BorderThickness="0,1,0,0"
+                                Padding="14,10">
+                          <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <TextBlock x:Name="OptimizationFindings"
+                                       Text="Performance checks will appear here."
+                                       Foreground="#40564F"
                                        FontSize="12"
-                                       TextWrapping="Wrap"
-                                       MaxWidth="280"
-                                       TextAlignment="Center" />
-                        </StackPanel>
+                                       TextWrapping="Wrap" />
+                          </ScrollViewer>
+                        </Border>
+                      </Grid>
                     </Border>
                 </Grid>
             </Border>
