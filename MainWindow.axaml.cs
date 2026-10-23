@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Avalonia.Automation;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Controls;
@@ -16,6 +17,8 @@ public partial class MainWindow : Window
 {
     private OptimizationResult? _lastOptimizationResult;
     private bool _isPreviewDiffMode;
+    private IStorageFile? _savedSqlFile;
+    private string? _lastSavedSql;
 
     public MainWindow()
     {
@@ -46,6 +49,7 @@ public partial class MainWindow : Window
             await using var stream = await file.OpenReadAsync();
             using var reader = new StreamReader(stream);
             InputQueryEditor.Text = await reader.ReadToEndAsync();
+            InputFileNameText.Text = file.Name;
             StatusText.Text = $"Loaded {file.Name}";
         }
         catch (IOException)
@@ -81,6 +85,7 @@ public partial class MainWindow : Window
         try
         {
             InputQueryEditor.Text = await File.ReadAllTextAsync(file.Path.LocalPath);
+            InputFileNameText.Text = file.Name;
             StatusText.Text = $"Loaded {file.Name}";
             e.Handled = true;
         }
@@ -105,9 +110,13 @@ public partial class MainWindow : Window
 
         // run optimization and collect its rewrite details
         _lastOptimizationResult = SqlOptimizer.OptimizeWithDetails(query);
+        _savedSqlFile = null;
+        _lastSavedSql = null;
+        OptimizedFileNameText.Text = "OPTIMIZED.SQL";
 
         // show the optimized query and its analysis notes
         OptimizedQueryEditor.Text = _lastOptimizationResult.OptimizedSql;
+        UnsavedIndicator.IsVisible = true;
         BuildDiffPreview(_lastOptimizationResult);
         OptimizationFindings.Text = string.Join(Environment.NewLine + Environment.NewLine, _lastOptimizationResult.PerformanceNotes);
 
@@ -123,6 +132,8 @@ public partial class MainWindow : Window
         {
             copyBtn.IsEnabled = true;
         }
+        SaveOptimizedSqlBtn.IsEnabled = true;
+        EditOptimizedSqlBtn.IsEnabled = true;
 
         // start each new result in the clean view
         _isPreviewDiffMode = false;
@@ -130,6 +141,75 @@ public partial class MainWindow : Window
 
         // show a summary of the optimization result
         StatusText.Text = _lastOptimizationResult.SummaryStatus;
+    }
+
+    private void EditOptimizedSql_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        OptimizedQueryEditor.IsReadOnly = !OptimizedQueryEditor.IsReadOnly;
+        ReadOnlyPencilSlash.IsVisible = OptimizedQueryEditor.IsReadOnly;
+        var actionName = OptimizedQueryEditor.IsReadOnly ? "Enable editing" : "Disable editing";
+        ToolTip.SetTip(EditOptimizedSqlBtn, actionName);
+        AutomationProperties.SetName(EditOptimizedSqlBtn, actionName);
+        StatusText.Text = OptimizedQueryEditor.IsReadOnly
+            ? "Optimized SQL editing disabled"
+            : "Optimized SQL editing enabled";
+    }
+
+    private async void SaveOptimizedSql_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(OptimizedQueryEditor.Text))
+        {
+            StatusText.Text = "Optimize a query before saving the result";
+            return;
+        }
+
+        if (_savedSqlFile is null)
+        {
+            _savedSqlFile = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Save optimized SQL",
+                SuggestedFileName = "query_optimizer_optimized_sql.sql",
+                DefaultExtension = "sql",
+                FileTypeChoices = new[]
+                {
+                    new FilePickerFileType("SQL files") { Patterns = new[] { "*.sql" } }
+                }
+            });
+
+            if (_savedSqlFile is null)
+                return;
+        }
+
+        try
+        {
+            await using var stream = await _savedSqlFile.OpenWriteAsync();
+            stream.SetLength(0);
+            await using var writer = new StreamWriter(stream);
+            await writer.WriteAsync(OptimizedQueryEditor.Text ?? string.Empty);
+            await writer.FlushAsync();
+            _lastSavedSql = OptimizedQueryEditor.Text ?? string.Empty;
+            OptimizedFileNameText.Text = _savedSqlFile.Name;
+            UnsavedIndicator.IsVisible = false;
+            StatusText.Text = $"Saved {_savedSqlFile.Name}";
+        }
+        catch (IOException)
+        {
+            StatusText.Text = $"Could not save {_savedSqlFile.Name}";
+        }
+        catch (UnauthorizedAccessException)
+        {
+            StatusText.Text = $"Access denied for {_savedSqlFile.Name}";
+        }
+    }
+
+    private void OptimizedQueryEditor_TextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (_lastOptimizationResult is null)
+            return;
+
+        var currentSql = OptimizedQueryEditor.Text ?? string.Empty;
+        UnsavedIndicator.IsVisible = _savedSqlFile is null ||
+                                     !string.Equals(currentSql, _lastSavedSql, StringComparison.Ordinal);
     }
 
     private void PreviewToggle_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
