@@ -1,6 +1,6 @@
 # Query Optimizer
 
-A small Avalonia desktop application starter for exploring and improving SQL scripts.
+A small Avalonia desktop application for reviewing SQL rewrites and static performance findings.
 
 ## Requirements
 
@@ -12,6 +12,11 @@ A small Avalonia desktop application starter for exploring and improving SQL scr
 dotnet run
 ```
 
-## Current scope
+## Project structure
 
-The app currently provides a basic SQL input and output workspace. SQL parsing, optimization, database connections, and execution plans are not implemented yet.
+- `Optimization/` contains optimization results, the optimizer service, rewrite rules, analysis, SQL text processing, and diff generation.
+- `Presentation/Views/` contains the Avalonia window and its XAML layout.
+- `Presentation/ViewModels/` contains screen state and diff presentation mapping.
+- `Presentation/Commands/` contains UI command implementations.
+
+The app performs local static analysis and safe text rewrites. It does not connect to a database or inspect execution plans.

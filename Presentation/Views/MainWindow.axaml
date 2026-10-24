@@ -1,11 +1,13 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:QueryOptimizer.Presentation.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         d:DesignWidth="1440"
         d:DesignHeight="900"
-        x:Class="QueryOptimizer.MainWindow"
+        x:Class="QueryOptimizer.Presentation.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
         Title="Query Optimizer"
         Icon="avares://QueryOptimizer/icon/query_optimizer_icon.ico"
         Width="1440"
@@ -78,16 +80,16 @@
                                                 VerticalAlignment="Center" Margin="0,1,0,0" />
                                     </Grid>
                                 </Button>
-                                <Button Classes="primary" Content="Optimize query  →" Click="OptimizeSql_Click" ToolTip.Tip="Apply the available SQL rewrite rules" />
+                                <Button Classes="primary" Content="Optimize query  →" Command="{Binding OptimizeCommand}" ToolTip.Tip="Apply the available SQL rewrite rules" />
                             </StackPanel>
                         </Grid>
                         <Border Grid.Row="1" Margin="1,0,1,1" CornerRadius="0,0,13,13"
                                 BorderBrush="#E7ECF3" BorderThickness="0,1,0,0" Background="#FBFCFE">
                             <Grid RowDefinitions="Auto,*">
                                 <Border Padding="18,9" Background="#F5F8FC">
-                                    <TextBlock x:Name="InputFileNameText" Text="QUERY.SQL" Foreground="#8996A8" FontSize="10" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding InputFileName}" Foreground="#8996A8" FontSize="10" FontWeight="Bold" />
                                 </Border>
-                                <TextBox Grid.Row="1" x:Name="InputQueryEditor" AcceptsReturn="True" TextWrapping="NoWrap"
+                                <TextBox Grid.Row="1" Text="{Binding InputSql, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="NoWrap"
                                          ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto"
                                          FontFamily="Cascadia Mono,Consolas,monospace" FontSize="13" Padding="20"
                                          BorderThickness="0" Background="Transparent" Foreground="#24344C"
@@ -112,8 +114,8 @@
                                 </StackPanel>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                <Button x:Name="PreviewToggleBtn" Classes="secondary" Padding="10,8"
-                                        Click="PreviewToggle_Click" IsEnabled="False"
+                                <Button Classes="secondary" Padding="10,8" Content="{Binding PreviewButtonText}"
+                                        Command="{Binding TogglePreviewCommand}" IsEnabled="{Binding CanPreviewChanges}"
                                         ToolTip.Tip="Show line-by-line differences from the input query"
                                         AutomationProperties.Name="Preview SQL changes">
                                     <Grid Width="18" Height="18">
@@ -124,7 +126,7 @@
                                     </Grid>
                                 </Button>
                                 <Button x:Name="CopyBtn" Classes="secondary" Padding="10,8"
-                                        Click="CopyOptimizedSql_Click" IsEnabled="False"
+                                        Click="CopyOptimizedSql_Click" IsEnabled="{Binding HasOptimizationResult}"
                                         ToolTip.Tip="Copy optimized SQL" AutomationProperties.Name="Copy optimized SQL">
                                     <Grid Width="18" Height="18">
                                         <Border Width="10" Height="12" BorderBrush="#53647B" BorderThickness="1.5"
@@ -134,14 +136,14 @@
                                     </Grid>
                                 </Button>
                                 <Button x:Name="EditOptimizedSqlBtn" Classes="secondary" Padding="10,8"
-                                        Click="EditOptimizedSql_Click" IsEnabled="False"
-                                        ToolTip.Tip="Enable editing" AutomationProperties.Name="Enable editing">
+                                        Command="{Binding ToggleOutputEditingCommand}" IsEnabled="{Binding HasOptimizationResult}"
+                                        ToolTip.Tip="{Binding EditActionName}" AutomationProperties.Name="{Binding EditActionName}">
                                     <Grid Width="18" Height="18">
                                         <TextBlock Text="✎" Foreground="#53647B" FontSize="16"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        <Border x:Name="ReadOnlyPencilSlash" Width="19" Height="1.5" Background="#A9363E"
+                                        <Border Width="19" Height="1.5" Background="#A9363E"
                                                 HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                IsVisible="True">
+                                                IsVisible="{Binding IsEditSlashVisible}">
                                             <Border.RenderTransform>
                                                 <RotateTransform Angle="-45" />
                                             </Border.RenderTransform>
@@ -149,7 +151,7 @@
                                     </Grid>
                                 </Button>
                                 <Button x:Name="SaveOptimizedSqlBtn" Classes="secondary" Padding="10,8"
-                                        Click="SaveOptimizedSql_Click" IsEnabled="False"
+                                        Click="SaveOptimizedSql_Click" IsEnabled="{Binding HasOptimizationResult}"
                                         ToolTip.Tip="Save optimized SQL" AutomationProperties.Name="Save optimized SQL">
                                     <Grid Width="18" Height="18">
                                         <Border Width="14" Height="15" BorderBrush="#53647B" BorderThickness="1.5"
@@ -167,8 +169,8 @@
                                 <Grid RowDefinitions="Auto,*">
                                     <Border Padding="18,9" Background="#F5F8FC">
                                         <Grid ColumnDefinitions="*,Auto">
-                                            <TextBlock x:Name="OptimizedFileNameText" Text="OPTIMIZED.SQL" Foreground="#8996A8" FontSize="10" FontWeight="Bold" />
-                                            <Border x:Name="UnsavedIndicator" Grid.Column="1" IsVisible="False"
+                                            <TextBlock Text="{Binding OptimizedFileName}" Foreground="#8996A8" FontSize="10" FontWeight="Bold" />
+                                            <Border Grid.Column="1" IsVisible="{Binding IsUnsaved}"
                                                     Background="#FFF4DF" BorderBrush="#F2D49A" BorderThickness="1"
                                                     CornerRadius="10" Padding="8,3">
                                                 <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
@@ -179,14 +181,31 @@
                                         </Grid>
                                     </Border>
                                     <Grid Grid.Row="1">
-                                        <TextBox x:Name="OptimizedQueryEditor" IsReadOnly="True" TextChanged="OptimizedQueryEditor_TextChanged" AcceptsReturn="True"
+                                        <TextBox Text="{Binding OptimizedSql, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsOutputReadOnly}"
+                                                 IsVisible="{Binding IsOptimizedEditorVisible}" AcceptsReturn="True"
                                                  TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Auto"
                                                  ScrollViewer.HorizontalScrollBarVisibility="Auto" FontFamily="Cascadia Mono,Consolas,monospace"
                                                  FontSize="13" Padding="20" BorderThickness="0" Background="Transparent"
                                                  Foreground="#24344C" PlaceholderText="Your optimized query will appear here." />
-                                        <Border x:Name="DiffViewBorder" IsVisible="False" Background="#FBFCFE">
+                                        <Border IsVisible="{Binding IsPreviewDiffMode}" Background="#FBFCFE">
                                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                                                <StackPanel x:Name="DiffContentPanel" Spacing="5" Margin="16" />
+                                                <ItemsControl ItemsSource="{Binding DiffLines}" Margin="16">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="vm:DiffLineViewModel">
+                                                            <Border Background="{Binding Background}" CornerRadius="5" Padding="9,5" Margin="0,0,0,5"
+                                                                    ToolTip.Tip="{Binding Tooltip}">
+                                                                <Grid ColumnDefinitions="42,*">
+                                                                    <TextBlock Text="{Binding LineNumber}" Foreground="#91A0B3" FontSize="11"
+                                                                               FontFamily="Cascadia Mono,Consolas,monospace"
+                                                                               VerticalAlignment="Center" />
+                                                                    <TextBlock Grid.Column="1" Text="{Binding Content}" Foreground="{Binding Foreground}"
+                                                                               FontSize="12" FontFamily="Cascadia Mono,Consolas,monospace"
+                                                                               TextWrapping="NoWrap" />
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
                                             </ScrollViewer>
                                         </Border>
                                     </Grid>
@@ -201,7 +220,7 @@
                                     <StackPanel Grid.Column="1" Spacing="4">
                                         <TextBlock Text="Performance notes" Foreground="#26364D" FontSize="12" FontWeight="SemiBold" />
                                         <ScrollViewer MaxHeight="115" VerticalScrollBarVisibility="Auto">
-                                            <TextBlock x:Name="OptimizationFindings" Text="Run an analysis to see query patterns and practical suggestions."
+                                            <TextBlock Text="{Binding Findings}"
                                                        Foreground="#68778D" FontSize="11" LineHeight="17" TextWrapping="Wrap" />
                                         </ScrollViewer>
                                     </StackPanel>
@@ -217,7 +236,7 @@
             <Grid ColumnDefinitions="*,Auto">
                 <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                     <Ellipse Width="7" Height="7" Fill="#246BFE" VerticalAlignment="Center" />
-                    <TextBlock x:Name="StatusText" Text="Ready when you are" Foreground="#53647B" FontSize="11" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Status}" Foreground="#53647B" FontSize="11" VerticalAlignment="Center" />
                 </StackPanel>
                 <TextBlock Grid.Column="1" Text="Static analysis · No database connection" Foreground="#8491A4" FontSize="10" VerticalAlignment="Center" />
             </Grid>
