@@ -15,60 +15,61 @@
         WindowState="Maximized"
         MinWidth="1100"
         MinHeight="620"
-        Background="#EEF2F7">
+        Background="{DynamicResource WindowBackground}">
     <Grid RowDefinitions="Auto,*,Auto">
-        <Border Grid.Row="0" Background="#111C2E" Padding="28,12">
-            <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="22" VerticalAlignment="Center">
-                <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                    <Border Width="40" Height="40" CornerRadius="12" Background="#246BFE" VerticalAlignment="Center">
-                        <TextBlock Text="&lt;_&gt;" Foreground="White" FontSize="15" FontWeight="Bold"
+        <Border Grid.Row="0" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="0,0,0,1" Padding="28,14">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <Border Width="40" Height="40" CornerRadius="12" Background="{DynamicResource Accent}">
+                        <TextBlock Text="&lt;/&gt;" Foreground="White" FontSize="13" FontFamily="Cascadia Mono,Consolas,monospace" FontWeight="Bold"
                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel Spacing="2" VerticalAlignment="Center">
-                        <TextBlock Text="Query Optimizer" Foreground="#F8FAFF" FontSize="18" FontWeight="Bold" />
-                        <TextBlock Text="A sharper workspace for better SQL" Foreground="#9EACC2" FontSize="11" />
+                        <TextBlock Text="Query Optimizer" Foreground="{DynamicResource TextPrimary}"
+                                   FontSize="17" FontWeight="SemiBold" />
+                        <TextBlock Text="A focused workspace for better SQL" Foreground="{DynamicResource TextMuted}"
+                                   FontSize="11" />
                     </StackPanel>
                 </StackPanel>
-                <Border Grid.Column="1" Width="1" Height="34" Background="#33435C" VerticalAlignment="Center" />
-                <StackPanel Grid.Column="2" Spacing="2" VerticalAlignment="Center">
-                    <TextBlock Text="SQL workspace" Foreground="#F8FAFF" FontSize="16" FontWeight="SemiBold" />
-                    <TextBlock Text="Refine a query and review practical performance checks." Foreground="#9EACC2" FontSize="11" />
-                </StackPanel>
-                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                    <Border CornerRadius="16" BorderBrush="#33435C" BorderThickness="1"
-                            Background="#1B2940" Padding="11,7" VerticalAlignment="Center">
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource SurfaceMuted}" BorderBrush="{DynamicResource BorderSubtle}"
+                            BorderThickness="1" CornerRadius="12" Padding="11,7">
                         <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
-                            <Ellipse Width="7" Height="7" Fill="#55D6A7" VerticalAlignment="Center" />
-                            <TextBlock Text="LOCAL ANALYSIS" Foreground="#CFD9E8" FontSize="9" FontWeight="Bold" />
+                            <Ellipse Width="7" Height="7" Fill="{DynamicResource Accent}" VerticalAlignment="Center" />
+                            <TextBlock Text="LOCAL WORKSPACE" Foreground="{DynamicResource TextSecondary}"
+                                       FontSize="9" FontWeight="Bold" VerticalAlignment="Center" />
                         </StackPanel>
                     </Border>
-                    <Border CornerRadius="8" BorderBrush="#33435C" BorderThickness="1"
-                            Background="#1B2940" Padding="11,7" VerticalAlignment="Center">
-                        <TextBlock Text="SAFE REWRITES" Foreground="#B8CFFF" FontSize="9" FontWeight="Bold" />
-                    </Border>
+                    <Button Classes="secondary" Width="38" Height="38" Padding="0"
+                            Command="{Binding ToggleThemeCommand}"
+                            ToolTip.Tip="Switch between light and dark appearance"
+                            AutomationProperties.Name="Toggle Theme">
+                        <TextBlock Text="◐" Foreground="{DynamicResource Accent}" FontSize="16"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
-
         <Grid Grid.Row="1" Margin="24,14,24,18">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" MinWidth="480" MaxWidth="1800" />
                 <ColumnDefinition Width="12" />
                 <ColumnDefinition Width="*" MinWidth="560" MaxWidth="1800" />
             </Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Background="White" BorderBrush="#DCE4EF" BorderThickness="1"
+                <Border Grid.Column="0" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1"
                         CornerRadius="16" BoxShadow="0 6 22 0 #101B2A0C" DragDrop.AllowDrop="True"
                         DragDrop.DragOver="InputQuery_DragOver" DragDrop.Drop="InputQuery_Drop">
                     <Grid RowDefinitions="Auto,*">
                         <Grid ColumnDefinitions="*,Auto" Margin="18,13,16,12">
                             <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                                <Border Width="32" Height="32" CornerRadius="10" Background="#EEF4FF">
-                                    <TextBlock Text="01" Foreground="#246BFE" FontSize="12" FontWeight="Bold"
+                                <Border Width="32" Height="32" CornerRadius="10" Background="{DynamicResource AccentSoft}">
+                                    <TextBlock Text="01" Foreground="{DynamicResource Accent}" FontSize="12" FontWeight="Bold"
                                                HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel Spacing="2" VerticalAlignment="Center">
-                                    <TextBlock Text="Input query" Foreground="#1B2A40" FontSize="15" FontWeight="SemiBold" />
-                                    <TextBlock Text="Write SQL or drop in a .sql file" Foreground="#8491A4" FontSize="11" />
+                                    <TextBlock Text="Input query" Foreground="{DynamicResource TextPrimary}" FontSize="15" FontWeight="SemiBold" />
+                                    <TextBlock Text="Write SQL or drop in a .sql file" Foreground="{DynamicResource TextMuted}" FontSize="11" />
                                 </StackPanel>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
@@ -76,13 +77,13 @@
                                         IsEnabled="{Binding AreWorkspaceActionsEnabled}"
                                         ToolTip.Tip="Open a .sql file" AutomationProperties.Name="Open SQL file">
                                     <Grid Width="18" Height="18">
-                                        <Border Width="14" Height="10" BorderBrush="#53647B" BorderThickness="1.5"
+                                        <Border Width="14" Height="10" BorderBrush="{DynamicResource TextSecondary}" BorderThickness="1.5"
                                                 CornerRadius="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,2" />
-                                        <Border Width="6" Height="3" BorderBrush="#53647B" BorderThickness="1.5"
+                                        <Border Width="6" Height="3" BorderBrush="{DynamicResource TextSecondary}" BorderThickness="1.5"
                                                 CornerRadius="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="2,3,0,0" />
-                                        <Border Width="1.5" Height="6" Background="#53647B" HorizontalAlignment="Center"
+                                        <Border Width="1.5" Height="6" Background="{DynamicResource TextSecondary}" HorizontalAlignment="Center"
                                                 VerticalAlignment="Center" Margin="0,1,0,0" />
-                                        <Border Width="6" Height="1.5" Background="#53647B" HorizontalAlignment="Center"
+                                        <Border Width="6" Height="1.5" Background="{DynamicResource TextSecondary}" HorizontalAlignment="Center"
                                                 VerticalAlignment="Center" Margin="0,1,0,0" />
                                     </Grid>
                                 </Button>
@@ -92,15 +93,15 @@
                             </StackPanel>
                         </Grid>
                         <Border Grid.Row="1" Margin="1,0,1,1" CornerRadius="0,0,13,13"
-                                BorderBrush="#E7ECF3" BorderThickness="0,1,0,0" Background="#FBFCFE">
+                                BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="0,1,0,0" Background="{DynamicResource SurfaceSubtle}">
                             <Grid RowDefinitions="Auto,*">
-                                <Border Padding="18,9" Background="#F5F8FC">
-                                    <TextBlock Text="{Binding InputFileName}" Foreground="#8996A8" FontSize="10" FontWeight="Bold" />
+                                <Border Padding="18,9" Background="{DynamicResource SurfaceMuted}">
+                                    <TextBlock Text="{Binding InputFileName}" Foreground="{DynamicResource TextMuted}" FontSize="10" FontWeight="Bold" />
                                 </Border>
                                 <TextBox Grid.Row="1" IsVisible="{Binding IsInputEditorVisible}" Text="{Binding InputSql, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="NoWrap"
                                          ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto"
                                          FontFamily="Cascadia Mono,Consolas,monospace" FontSize="13" Padding="16"
-                                         BorderThickness="0" Background="Transparent" Foreground="#24344C"
+                                         BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextCode}"
                                          PlaceholderText="SELECT customer_id, order_date&#x0a;FROM orders&#x0a;WHERE order_status = 'open';" />
                                 <ScrollViewer Grid.Row="1" x:Name="InputDiffScrollViewer" IsVisible="{Binding IsDiffVisible}"
                                               ScrollChanged="DiffScrollViewer_ScrollChanged"
@@ -123,18 +124,18 @@
                     </Grid>
                 </Border>
 
-                <Border Grid.Column="2" Background="White" BorderBrush="#DCE4EF" BorderThickness="1"
+                <Border Grid.Column="2" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1"
                         CornerRadius="16" BoxShadow="0 6 22 0 #101B2A0C">
                     <Grid RowDefinitions="Auto,*">
                         <Grid ColumnDefinitions="*,Auto" Margin="18,13,16,12">
                             <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                                <Border Width="32" Height="32" CornerRadius="10" Background="#EAF8F3">
-                                    <TextBlock Text="02" Foreground="#15956A" FontSize="12" FontWeight="Bold"
+                                <Border Width="32" Height="32" CornerRadius="10" Background="{DynamicResource SuccessSoft}">
+                                    <TextBlock Text="02" Foreground="{DynamicResource Success}" FontSize="12" FontWeight="Bold"
                                                HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel Spacing="2" VerticalAlignment="Center">
-                                    <TextBlock Text="Optimized result" Foreground="#1B2A40" FontSize="15" FontWeight="SemiBold" />
-                                    <TextBlock Text="Review the rewrite and analysis" Foreground="#8491A4" FontSize="11" />
+                                    <TextBlock Text="Optimized result" Foreground="{DynamicResource TextPrimary}" FontSize="15" FontWeight="SemiBold" />
+                                    <TextBlock Text="Review the rewrite and analysis" Foreground="{DynamicResource TextMuted}" FontSize="11" />
                                 </StackPanel>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
@@ -143,9 +144,9 @@
                                         ToolTip.Tip="Show line-by-line differences from the input query"
                                         AutomationProperties.Name="Preview SQL changes">
                                     <Grid Width="18" Height="18">
-                                        <TextBlock Text="−" Foreground="#A9363E" FontSize="14" FontWeight="Bold"
+                                        <TextBlock Text="−" Foreground="{DynamicResource Danger}" FontSize="14" FontWeight="Bold"
                                                    HorizontalAlignment="Left" VerticalAlignment="Center" />
-                                        <TextBlock Text="+" Foreground="#176B43" FontSize="14" FontWeight="Bold"
+                                        <TextBlock Text="+" Foreground="{DynamicResource Success}" FontSize="14" FontWeight="Bold"
                                                    HorizontalAlignment="Right" VerticalAlignment="Center" />
                                     </Grid>
                                 </Button>
@@ -153,19 +154,19 @@
                                         Click="CopyOptimizedSql_Click" IsEnabled="{Binding CanUseOutputActions}"
                                         ToolTip.Tip="Copy optimized SQL" AutomationProperties.Name="Copy optimized SQL">
                                     <Grid Width="18" Height="18">
-                                        <Border Width="10" Height="12" BorderBrush="#53647B" BorderThickness="1.5"
+                                        <Border Width="10" Height="12" BorderBrush="{DynamicResource TextSecondary}" BorderThickness="1.5"
                                                 CornerRadius="2" HorizontalAlignment="Right" VerticalAlignment="Top" />
-                                        <Border Width="10" Height="12" BorderBrush="#53647B" BorderThickness="1.5"
-                                                CornerRadius="2" Background="#F1F5FA" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
+                                        <Border Width="10" Height="12" BorderBrush="{DynamicResource TextSecondary}" BorderThickness="1.5"
+                                                CornerRadius="2" Background="{DynamicResource SurfaceMuted}" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
                                     </Grid>
                                 </Button>
                                 <Button x:Name="EditOptimizedSqlBtn" Classes="secondary" Padding="10,8"
                                         Command="{Binding ToggleOutputEditingCommand}" IsEnabled="{Binding CanUseOutputActions}"
                                         ToolTip.Tip="{Binding EditActionName}" AutomationProperties.Name="{Binding EditActionName}">
                                     <Grid Width="18" Height="18">
-                                        <TextBlock Text="✎" Foreground="#53647B" FontSize="16"
+                                        <TextBlock Text="✎" Foreground="{DynamicResource TextSecondary}" FontSize="16"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        <Border Width="19" Height="1.5" Background="#A9363E"
+                                        <Border Width="19" Height="1.5" Background="{DynamicResource Danger}"
                                                 HorizontalAlignment="Center" VerticalAlignment="Center"
                                                 IsVisible="{Binding IsEditSlashVisible}">
                                             <Border.RenderTransform>
@@ -178,28 +179,28 @@
                                         Click="SaveOptimizedSql_Click" IsEnabled="{Binding CanUseOutputActions}"
                                         ToolTip.Tip="Save optimized SQL" AutomationProperties.Name="Save optimized SQL">
                                     <Grid Width="18" Height="18">
-                                        <Border Width="14" Height="15" BorderBrush="#53647B" BorderThickness="1.5"
+                                        <Border Width="14" Height="15" BorderBrush="{DynamicResource TextSecondary}" BorderThickness="1.5"
                                                 CornerRadius="2" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        <Border Width="8" Height="5" BorderBrush="#53647B" BorderThickness="1.5"
+                                        <Border Width="8" Height="5" BorderBrush="{DynamicResource TextSecondary}" BorderThickness="1.5"
                                                 CornerRadius="1" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,2,0,0" />
-                                        <Border Width="8" Height="4" BorderBrush="#53647B" BorderThickness="1.5"
+                                        <Border Width="8" Height="4" BorderBrush="{DynamicResource TextSecondary}" BorderThickness="1.5"
                                                 CornerRadius="1" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,2" />
                                     </Grid>
                                 </Button>
                             </StackPanel>
                         </Grid>
                         <Grid Grid.Row="1" RowDefinitions="*,Auto" Margin="1,0,1,1">
-                            <Border CornerRadius="0" BorderBrush="#E7ECF3" BorderThickness="0,1,0,0" Background="#FBFCFE">
+                            <Border CornerRadius="0" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="0,1,0,0" Background="{DynamicResource SurfaceSubtle}">
                                 <Grid RowDefinitions="Auto,*">
-                                    <Border Padding="18,9" Background="#F5F8FC">
+                                    <Border Padding="18,9" Background="{DynamicResource SurfaceMuted}">
                                         <Grid ColumnDefinitions="*,Auto">
-                                            <TextBlock Text="{Binding OptimizedFileName}" Foreground="#8996A8" FontSize="10" FontWeight="Bold" />
+                                            <TextBlock Text="{Binding OptimizedFileName}" Foreground="{DynamicResource TextMuted}" FontSize="10" FontWeight="Bold" />
                                             <Border Grid.Column="1" IsVisible="{Binding IsUnsaved}"
-                                                    Background="#FFF4DF" BorderBrush="#F2D49A" BorderThickness="1"
+                                                    Background="{DynamicResource WarningSoft}" BorderBrush="{DynamicResource WarningBorder}" BorderThickness="1"
                                                     CornerRadius="10" Padding="8,3">
                                                 <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                                     <Ellipse Width="6" Height="6" Fill="#D99016" VerticalAlignment="Center" />
-                                                    <TextBlock Text="Unsaved" Foreground="#8B5A0A" FontSize="10" FontWeight="SemiBold" />
+                                                    <TextBlock Text="Unsaved" Foreground="{DynamicResource WarningText}" FontSize="10" FontWeight="SemiBold" />
                                                 </StackPanel>
                                             </Border>
                                         </Grid>
@@ -210,8 +211,8 @@
                                                  TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Auto"
                                                  ScrollViewer.HorizontalScrollBarVisibility="Auto" FontFamily="Cascadia Mono,Consolas,monospace"
                                                  FontSize="13" Padding="16" BorderThickness="0" Background="Transparent"
-                                                 Foreground="#24344C" PlaceholderText="Your optimized query will appear here." />
-                                        <Border IsVisible="{Binding IsDiffVisible}" Background="#FBFCFE">
+                                                 Foreground="{DynamicResource TextCode}" PlaceholderText="Your optimized query will appear here." />
+                                        <Border IsVisible="{Binding IsDiffVisible}" Background="{DynamicResource SurfaceSubtle}">
                                             <ScrollViewer x:Name="OutputDiffScrollViewer" ScrollChanged="DiffScrollViewer_ScrollChanged"
                                                           VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                                                 <ItemsControl ItemsSource="{Binding OptimizedDiffLines}" Margin="16,12">
@@ -236,22 +237,22 @@
                                     </Grid>
                                 </Grid>
                             </Border>
-                            <Border Grid.Row="1" IsVisible="{Binding IsPerformanceNotesVisible}" Background="#F5F8FC" BorderBrush="#E1E8F1" BorderThickness="0,1,0,0"
+                            <Border Grid.Row="1" IsVisible="{Binding IsPerformanceNotesVisible}" Background="{DynamicResource SurfaceMuted}" BorderBrush="{DynamicResource Border}" BorderThickness="0,1,0,0"
                                     Padding="16,10" CornerRadius="0,0,15,15">
                                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                                    <Border Width="30" Height="30" CornerRadius="9" Background="#FDEDEE" VerticalAlignment="Top">
-                                        <TextBlock Text="03" Foreground="#A9363E" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <Border Width="30" Height="30" CornerRadius="9" Background="{DynamicResource DangerSoft}" VerticalAlignment="Top">
+                                        <TextBlock Text="03" Foreground="{DynamicResource Danger}" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                     <StackPanel Grid.Column="1" Spacing="4">
                                         <Grid ColumnDefinitions="*,Auto">
-                                            <TextBlock Text="Performance notes" Foreground="#26364D" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                            <TextBlock Text="Performance notes" Foreground="{DynamicResource TextPrimary}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
                                             <Button Grid.Column="1" Classes="secondary" Padding="8,4" Content="Copy notes"
                                                     IsEnabled="{Binding AreWorkspaceActionsEnabled}"
                                                     Click="CopyPerformanceNotes_Click" ToolTip.Tip="Copy all performance notes" />
                                         </Grid>
                                         <ScrollViewer MaxHeight="96" VerticalScrollBarVisibility="Auto">
                                             <TextBlock Text="{Binding Findings}"
-                                                       Foreground="#68778D" FontSize="11" LineHeight="17" TextWrapping="Wrap" />
+                                                       Foreground="{DynamicResource TextSecondary}" FontSize="11" LineHeight="17" TextWrapping="Wrap" />
                                         </ScrollViewer>
                                     </StackPanel>
                                 </Grid>
@@ -259,7 +260,7 @@
                         </Grid>
                     </Grid>
                 </Border>
-                <Border Grid.Column="1" Width="2" Background="#DCE4EF" CornerRadius="1"
+                <Border Grid.Column="1" Width="2" Background="{DynamicResource Border}" CornerRadius="1"
                         HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" />
                 <GridSplitter Grid.Column="1" Classes="paneSplitter" MinWidth="12" MaxWidth="12"
                               ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"
@@ -267,13 +268,13 @@
                               ToolTip.Tip="Drag to resize the SQL panes" />
         </Grid>
 
-        <Border Grid.Row="2" Background="#E9EEF5" BorderBrush="#DCE4EF" BorderThickness="0,1,0,0" Padding="32,11">
+        <Border Grid.Row="2" Background="{DynamicResource FooterBackground}" BorderBrush="{DynamicResource Border}" BorderThickness="0,1,0,0" Padding="32,11">
             <Grid ColumnDefinitions="*,Auto">
                 <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                    <Ellipse Width="7" Height="7" Fill="#246BFE" VerticalAlignment="Center" />
-                    <TextBlock Text="{Binding Status}" Foreground="#53647B" FontSize="11" VerticalAlignment="Center" />
+                    <Ellipse Width="7" Height="7" Fill="{DynamicResource Accent}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Status}" Foreground="{DynamicResource TextSecondary}" FontSize="11" VerticalAlignment="Center" />
                 </StackPanel>
-                <TextBlock Grid.Column="1" Text="Static analysis · No database connection" Foreground="#8491A4" FontSize="10" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="Static analysis · No database connection" Foreground="{DynamicResource TextMuted}" FontSize="10" VerticalAlignment="Center" />
             </Grid>
         </Border>
     </Grid>

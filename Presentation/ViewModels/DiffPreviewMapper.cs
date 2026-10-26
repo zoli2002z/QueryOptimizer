@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Avalonia;
 using Avalonia.Media;
+using Avalonia.Styling;
 using QueryOptimizer.Optimization;
 
 namespace QueryOptimizer.Presentation.ViewModels;
@@ -13,6 +15,7 @@ public sealed class DiffPreviewMapper : IDiffPreviewMapper
     {
         ArgumentNullException.ThrowIfNull(result);
 
+        var isDark = Application.Current?.RequestedThemeVariant == ThemeVariant.Dark;
         var reasonsByLine = BuildDiffReasonMap(result);
         var original = new List<DiffSideLineViewModel>(result.DiffLines.Count);
         var optimized = new List<DiffSideLineViewModel>(result.DiffLines.Count);
@@ -28,18 +31,18 @@ public sealed class DiffPreviewMapper : IDiffPreviewMapper
             {
                 case DiffType.Removed:
                     original.Add(new DiffSideLineViewModel(line.OldLineNumber?.ToString() ?? string.Empty,
-                        line.Text, Brush.Parse("#FDEDEE"), Brush.Parse("#A9363E"), tooltip));
-                    optimized.Add(Blank(tooltip));
+                        line.Text, Brush.Parse(isDark ? "#402A36" : "#FDEDEE"), Brush.Parse(isDark ? "#F08B92" : "#A9363E"), tooltip));
+                    optimized.Add(Blank(tooltip, isDark));
                     break;
                 case DiffType.Added:
-                    original.Add(Blank(tooltip));
+                    original.Add(Blank(tooltip, isDark));
                     optimized.Add(new DiffSideLineViewModel(line.NewLineNumber?.ToString() ?? string.Empty,
-                        line.Text, Brush.Parse("#E8F7EE"), Brush.Parse("#176B43"), tooltip));
+                        line.Text, Brush.Parse(isDark ? "#1D3A35" : "#E8F7EE"), Brush.Parse(isDark ? "#5BD0A1" : "#176B43"), tooltip));
                     break;
                 default:
                     var number = line.NewLineNumber?.ToString() ?? line.OldLineNumber?.ToString() ?? string.Empty;
-                    original.Add(new DiffSideLineViewModel(number, line.Text, Brush.Parse("#FBFCFE"), Brush.Parse("#24344C"), tooltip));
-                    optimized.Add(new DiffSideLineViewModel(number, line.Text, Brush.Parse("#FBFCFE"), Brush.Parse("#24344C"), tooltip));
+                    original.Add(new DiffSideLineViewModel(number, line.Text, Brush.Parse(isDark ? "#141E2D" : "#FBFCFE"), Brush.Parse(isDark ? "#D3DDED" : "#24344C"), tooltip));
+                    optimized.Add(new DiffSideLineViewModel(number, line.Text, Brush.Parse(isDark ? "#141E2D" : "#FBFCFE"), Brush.Parse(isDark ? "#D3DDED" : "#24344C"), tooltip));
                     break;
             }
         }
@@ -47,13 +50,14 @@ public sealed class DiffPreviewMapper : IDiffPreviewMapper
         return (original, optimized);
     }
 
-    private static DiffSideLineViewModel Blank(string? tooltip) =>
-        new(string.Empty, string.Empty, Brush.Parse("#F5F7FA"), Brush.Parse("#91A0B3"), tooltip);
+    private static DiffSideLineViewModel Blank(string? tooltip, bool isDark) =>
+        new(string.Empty, string.Empty, Brush.Parse(isDark ? "#1D2A3D" : "#F5F7FA"), Brush.Parse(isDark ? "#91A1B6" : "#91A0B3"), tooltip);
 
     public IReadOnlyList<DiffLineViewModel> Map(OptimizationResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
 
+        var isDark = Application.Current?.RequestedThemeVariant == ThemeVariant.Dark;
         var reasonsByLine = BuildDiffReasonMap(result);
         var rows = new List<DiffLineViewModel>(result.DiffLines.Count);
         for (var index = 0; index < result.DiffLines.Count; index++)
@@ -61,8 +65,8 @@ public sealed class DiffPreviewMapper : IDiffPreviewMapper
             var line = result.DiffLines[index];
             var (background, foreground, marker, number) = line.Type switch
             {
-                DiffType.Added => ("#E8F7EE", "#176B43", "+", line.NewLineNumber?.ToString() ?? string.Empty),
-                DiffType.Removed => ("#FDEDEE", "#A9363E", "-", line.OldLineNumber?.ToString() ?? string.Empty),
+                DiffType.Added => (isDark ? "#1D3A35" : "#E8F7EE", isDark ? "#5BD0A1" : "#176B43", "+", line.NewLineNumber?.ToString() ?? string.Empty),
+                DiffType.Removed => (isDark ? "#402A36" : "#FDEDEE", isDark ? "#F08B92" : "#A9363E", "-", line.OldLineNumber?.ToString() ?? string.Empty),
                 _ => ("#F5F7FA", "#53647B", "·", line.NewLineNumber?.ToString() ?? line.OldLineNumber?.ToString() ?? string.Empty)
             };
             var tooltip = reasonsByLine.TryGetValue(index, out var reasons)

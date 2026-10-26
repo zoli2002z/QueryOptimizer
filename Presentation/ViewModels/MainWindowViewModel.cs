@@ -4,8 +4,11 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Avalonia;
+using Avalonia.Styling;
 using QueryOptimizer.Optimization;
 using QueryOptimizer.Presentation.Commands;
+using QueryOptimizer.Presentation;
 
 namespace QueryOptimizer.Presentation.ViewModels;
 
@@ -23,6 +26,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private OptimizationResult? _lastOptimizationResult;
     private bool _isPreviewDiffMode;
     private bool _isOutputReadOnly = true;
+    private bool _isDarkTheme;
 
     public MainWindowViewModel(ISqlOptimizationService optimizer, IDiffPreviewMapper diffPreviewMapper)
     {
@@ -32,6 +36,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         OptimizeCommand = new RelayCommand(Optimize);
         TogglePreviewCommand = new RelayCommand(TogglePreview);
         ToggleOutputEditingCommand = new RelayCommand(ToggleOutputEditing);
+        ToggleThemeCommand = new RelayCommand(ToggleTheme);
+        _isDarkTheme = Application.Current?.RequestedThemeVariant == ThemeVariant.Dark;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -108,6 +114,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public bool CanUseOutputActions => HasOptimizationResult && AreWorkspaceActionsEnabled;
     public string PreviewButtonText => IsPreviewDiffMode ? "Show optimized SQL" : "Preview changes";
 
+    public bool IsDarkTheme => _isDarkTheme;
+    public string ThemeButtonText => IsDarkTheme ? "Light mode" : "Dark mode";
+
     public bool IsOutputReadOnly
     {
         get => _isOutputReadOnly;
@@ -128,6 +137,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public ICommand OptimizeCommand { get; }
     public ICommand TogglePreviewCommand { get; }
     public ICommand ToggleOutputEditingCommand { get; }
+    public ICommand ToggleThemeCommand { get; }
 
     public void LoadInput(string sql, string fileName)
     {
@@ -191,6 +201,27 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         if (!HasOptimizationResult) return;
         IsOutputReadOnly = !IsOutputReadOnly;
         Status = IsOutputReadOnly ? "Optimized SQL editing disabled" : "Optimized SQL editing enabled";
+    }
+
+    private void ToggleTheme()
+    {
+        _isDarkTheme = !IsDarkTheme;
+        if (Application.Current is { } application)
+            application.RequestedThemeVariant = _isDarkTheme ? ThemeVariant.Dark : ThemeVariant.Light;
+        ThemePreferenceStore.SaveDarkMode(_isDarkTheme);
+
+        OnPropertyChanged(nameof(IsDarkTheme));
+        OnPropertyChanged(nameof(ThemeButtonText));
+
+        if (_lastOptimizationResult is null) return;
+        DiffLines.Clear();
+        foreach (var line in _diffPreviewMapper.Map(_lastOptimizationResult))
+            DiffLines.Add(line);
+        var sideBySide = _diffPreviewMapper.MapSideBySide(_lastOptimizationResult);
+        OriginalDiffLines.Clear();
+        OptimizedDiffLines.Clear();
+        foreach (var line in sideBySide.Original) OriginalDiffLines.Add(line);
+        foreach (var line in sideBySide.Optimized) OptimizedDiffLines.Add(line);
     }
 
     private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

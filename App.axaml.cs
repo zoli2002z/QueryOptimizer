@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using QueryOptimizer.Optimization;
+using QueryOptimizer.Presentation;
 using QueryOptimizer.Presentation.ViewModels;
 using QueryOptimizer.Presentation.Views;
 
@@ -18,6 +19,9 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            RequestedThemeVariant = ThemePreferenceStore.LoadDarkMode()
+                ? Avalonia.Styling.ThemeVariant.Dark
+                : Avalonia.Styling.ThemeVariant.Light;
             var viewModel = new MainWindowViewModel(new SqlOptimizationEngine(), new DiffPreviewMapper());
             desktop.MainWindow = new MainWindow(viewModel);
         }
