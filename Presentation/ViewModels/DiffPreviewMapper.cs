@@ -9,6 +9,47 @@ namespace QueryOptimizer.Presentation.ViewModels;
 
 public sealed class DiffPreviewMapper : IDiffPreviewMapper
 {
+    public (IReadOnlyList<DiffSideLineViewModel> Original, IReadOnlyList<DiffSideLineViewModel> Optimized) MapSideBySide(OptimizationResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+
+        var reasonsByLine = BuildDiffReasonMap(result);
+        var original = new List<DiffSideLineViewModel>(result.DiffLines.Count);
+        var optimized = new List<DiffSideLineViewModel>(result.DiffLines.Count);
+        for (var index = 0; index < result.DiffLines.Count; index++)
+        {
+            var line = result.DiffLines[index];
+            var tooltip = reasonsByLine.TryGetValue(index, out var reasons)
+                ? string.Join(Environment.NewLine + Environment.NewLine,
+                    reasons.Select(rewrite => $"{rewrite.Title}{Environment.NewLine}{rewrite.WhyItMatters}"))
+                : null;
+
+            switch (line.Type)
+            {
+                case DiffType.Removed:
+                    original.Add(new DiffSideLineViewModel(line.OldLineNumber?.ToString() ?? string.Empty,
+                        line.Text, Brush.Parse("#FDEDEE"), Brush.Parse("#A9363E"), tooltip));
+                    optimized.Add(Blank(tooltip));
+                    break;
+                case DiffType.Added:
+                    original.Add(Blank(tooltip));
+                    optimized.Add(new DiffSideLineViewModel(line.NewLineNumber?.ToString() ?? string.Empty,
+                        line.Text, Brush.Parse("#E8F7EE"), Brush.Parse("#176B43"), tooltip));
+                    break;
+                default:
+                    var number = line.NewLineNumber?.ToString() ?? line.OldLineNumber?.ToString() ?? string.Empty;
+                    original.Add(new DiffSideLineViewModel(number, line.Text, Brush.Parse("#FBFCFE"), Brush.Parse("#24344C"), tooltip));
+                    optimized.Add(new DiffSideLineViewModel(number, line.Text, Brush.Parse("#FBFCFE"), Brush.Parse("#24344C"), tooltip));
+                    break;
+            }
+        }
+
+        return (original, optimized);
+    }
+
+    private static DiffSideLineViewModel Blank(string? tooltip) =>
+        new(string.Empty, string.Empty, Brush.Parse("#F5F7FA"), Brush.Parse("#91A0B3"), tooltip);
+
     public IReadOnlyList<DiffLineViewModel> Map(OptimizationResult result)
     {
         ArgumentNullException.ThrowIfNull(result);

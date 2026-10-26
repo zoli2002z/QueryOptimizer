@@ -13,51 +13,56 @@
         Width="1440"
         Height="900"
         WindowState="Maximized"
-        MinWidth="900"
+        MinWidth="1100"
         MinHeight="620"
-        Background="#F3F6FB">
+        Background="#EEF2F7">
     <Grid RowDefinitions="Auto,*,Auto">
-        <Border Grid.Row="0" Background="#111C2E" Padding="34,22">
-            <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
-                <StackPanel Orientation="Horizontal" Spacing="15" VerticalAlignment="Center">
-                    <Border Width="44" Height="44" CornerRadius="13" Background="#246BFE" VerticalAlignment="Center">
-                        <TextBlock Text="&lt;_&gt;" Foreground="White" FontSize="16" FontWeight="Bold"
+        <Border Grid.Row="0" Background="#111C2E" Padding="28,12">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="22" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <Border Width="40" Height="40" CornerRadius="12" Background="#246BFE" VerticalAlignment="Center">
+                        <TextBlock Text="&lt;_&gt;" Foreground="White" FontSize="15" FontWeight="Bold"
                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
-                    <StackPanel Spacing="3" VerticalAlignment="Center">
-                        <TextBlock Text="Query Optimizer" Foreground="#F8FAFF" FontSize="21" FontWeight="Bold" />
-                        <TextBlock Text="A sharper workspace for better SQL" Foreground="#9EACC2" FontSize="12" />
+                    <StackPanel Spacing="2" VerticalAlignment="Center">
+                        <TextBlock Text="Query Optimizer" Foreground="#F8FAFF" FontSize="18" FontWeight="Bold" />
+                        <TextBlock Text="A sharper workspace for better SQL" Foreground="#9EACC2" FontSize="11" />
                     </StackPanel>
                 </StackPanel>
-                <Border Grid.Column="1" CornerRadius="16" BorderBrush="#33435C" BorderThickness="1"
-                        Background="#1B2940" Padding="13,8" VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                        <Ellipse Width="7" Height="7" Fill="#55D6A7" VerticalAlignment="Center" />
-                        <TextBlock Text="LOCAL ANALYSIS" Foreground="#CFD9E8" FontSize="10" FontWeight="Bold" />
-                    </StackPanel>
-                </Border>
+                <Border Grid.Column="1" Width="1" Height="34" Background="#33435C" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="2" Spacing="2" VerticalAlignment="Center">
+                    <TextBlock Text="SQL workspace" Foreground="#F8FAFF" FontSize="16" FontWeight="SemiBold" />
+                    <TextBlock Text="Refine a query and review practical performance checks." Foreground="#9EACC2" FontSize="11" />
+                </StackPanel>
+                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Border CornerRadius="16" BorderBrush="#33435C" BorderThickness="1"
+                            Background="#1B2940" Padding="11,7" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                            <Ellipse Width="7" Height="7" Fill="#55D6A7" VerticalAlignment="Center" />
+                            <TextBlock Text="LOCAL ANALYSIS" Foreground="#CFD9E8" FontSize="9" FontWeight="Bold" />
+                        </StackPanel>
+                    </Border>
+                    <Border CornerRadius="8" BorderBrush="#33435C" BorderThickness="1"
+                            Background="#1B2940" Padding="11,7" VerticalAlignment="Center">
+                        <TextBlock Text="SAFE REWRITES" Foreground="#B8CFFF" FontSize="9" FontWeight="Bold" />
+                    </Border>
+                </StackPanel>
             </Grid>
         </Border>
 
-        <Grid Grid.Row="1" RowDefinitions="Auto,*" Margin="32,26,32,24">
-            <Grid ColumnDefinitions="*,Auto" Margin="2,0,2,20">
-                <StackPanel Spacing="4">
-                    <TextBlock Text="SQL workspace" Foreground="#15243A" FontSize="23" FontWeight="Bold" />
-                    <TextBlock Text="Refine a query and review practical performance checks." Foreground="#718096" FontSize="13" />
-                </StackPanel>
-                <Border Grid.Column="1" CornerRadius="8" Background="#E8F0FF" Padding="12,8" VerticalAlignment="Center">
-                    <TextBlock Text="SAFE REWRITES ONLY" Foreground="#275BC0" FontSize="10" FontWeight="Bold" />
-                </Border>
-            </Grid>
-
-            <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="18">
+        <Grid Grid.Row="1" Margin="24,14,24,18">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="480" MaxWidth="1800" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="*" MinWidth="560" MaxWidth="1800" />
+            </Grid.ColumnDefinitions>
                 <Border Grid.Column="0" Background="White" BorderBrush="#DCE4EF" BorderThickness="1"
-                        CornerRadius="14" BoxShadow="0 5 20 0 #101B2A0A" DragDrop.AllowDrop="True"
+                        CornerRadius="16" BoxShadow="0 6 22 0 #101B2A0C" DragDrop.AllowDrop="True"
                         DragDrop.DragOver="InputQuery_DragOver" DragDrop.Drop="InputQuery_Drop">
                     <Grid RowDefinitions="Auto,*">
-                        <Grid ColumnDefinitions="*,Auto" Margin="22,18,18,16">
+                        <Grid ColumnDefinitions="*,Auto" Margin="18,13,16,12">
                             <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                                <Border Width="34" Height="34" CornerRadius="10" Background="#EEF4FF">
+                                <Border Width="32" Height="32" CornerRadius="10" Background="#EEF4FF">
                                     <TextBlock Text="01" Foreground="#246BFE" FontSize="12" FontWeight="Bold"
                                                HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
@@ -67,7 +72,8 @@
                                 </StackPanel>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
-                                <Button Classes="secondary" Padding="10,8" Click="SelectSqlFile_Click"
+                                <Button Classes="secondary" Padding="9,8" Click="SelectSqlFile_Click"
+                                        IsEnabled="{Binding AreWorkspaceActionsEnabled}"
                                         ToolTip.Tip="Open a .sql file" AutomationProperties.Name="Open SQL file">
                                     <Grid Width="18" Height="18">
                                         <Border Width="14" Height="10" BorderBrush="#53647B" BorderThickness="1.5"
@@ -80,7 +86,9 @@
                                                 VerticalAlignment="Center" Margin="0,1,0,0" />
                                     </Grid>
                                 </Button>
-                                <Button Classes="primary" Content="Optimize query  →" Command="{Binding OptimizeCommand}" ToolTip.Tip="Apply the available SQL rewrite rules" />
+                                <Button Classes="primary" Content="Optimize query  →" Command="{Binding OptimizeCommand}"
+                                        IsEnabled="{Binding AreWorkspaceActionsEnabled}"
+                                        ToolTip.Tip="Apply the available SQL rewrite rules" />
                             </StackPanel>
                         </Grid>
                         <Border Grid.Row="1" Margin="1,0,1,1" CornerRadius="0,0,13,13"
@@ -89,22 +97,38 @@
                                 <Border Padding="18,9" Background="#F5F8FC">
                                     <TextBlock Text="{Binding InputFileName}" Foreground="#8996A8" FontSize="10" FontWeight="Bold" />
                                 </Border>
-                                <TextBox Grid.Row="1" Text="{Binding InputSql, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="NoWrap"
+                                <TextBox Grid.Row="1" IsVisible="{Binding IsInputEditorVisible}" Text="{Binding InputSql, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="NoWrap"
                                          ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                         FontFamily="Cascadia Mono,Consolas,monospace" FontSize="13" Padding="20"
+                                         FontFamily="Cascadia Mono,Consolas,monospace" FontSize="13" Padding="16"
                                          BorderThickness="0" Background="Transparent" Foreground="#24344C"
                                          PlaceholderText="SELECT customer_id, order_date&#x0a;FROM orders&#x0a;WHERE order_status = 'open';" />
+                                <ScrollViewer Grid.Row="1" x:Name="InputDiffScrollViewer" IsVisible="{Binding IsDiffVisible}"
+                                              ScrollChanged="DiffScrollViewer_ScrollChanged"
+                                              VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                    <ItemsControl ItemsSource="{Binding OriginalDiffLines}" Margin="16,12">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:DiffSideLineViewModel">
+                                                <Border Background="{Binding Background}" Padding="8,4" ToolTip.Tip="{Binding Tooltip}">
+                                                    <Grid ColumnDefinitions="38,*">
+                                                        <TextBlock Text="{Binding LineNumber}" Foreground="#91A0B3" FontSize="11" FontFamily="Cascadia Mono,Consolas,monospace" />
+                                                        <TextBlock Grid.Column="1" Text="{Binding Content}" Foreground="{Binding Foreground}" FontSize="12" FontFamily="Cascadia Mono,Consolas,monospace" TextWrapping="NoWrap" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
                             </Grid>
                         </Border>
                     </Grid>
                 </Border>
 
-                <Border Grid.Column="1" Background="White" BorderBrush="#DCE4EF" BorderThickness="1"
-                        CornerRadius="14" BoxShadow="0 5 20 0 #101B2A0A">
+                <Border Grid.Column="2" Background="White" BorderBrush="#DCE4EF" BorderThickness="1"
+                        CornerRadius="16" BoxShadow="0 6 22 0 #101B2A0C">
                     <Grid RowDefinitions="Auto,*">
-                        <Grid ColumnDefinitions="*,Auto" Margin="22,18,22,16">
+                        <Grid ColumnDefinitions="*,Auto" Margin="18,13,16,12">
                             <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                                <Border Width="34" Height="34" CornerRadius="10" Background="#EAF8F3">
+                                <Border Width="32" Height="32" CornerRadius="10" Background="#EAF8F3">
                                     <TextBlock Text="02" Foreground="#15956A" FontSize="12" FontWeight="Bold"
                                                HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
@@ -126,7 +150,7 @@
                                     </Grid>
                                 </Button>
                                 <Button x:Name="CopyBtn" Classes="secondary" Padding="10,8"
-                                        Click="CopyOptimizedSql_Click" IsEnabled="{Binding HasOptimizationResult}"
+                                        Click="CopyOptimizedSql_Click" IsEnabled="{Binding CanUseOutputActions}"
                                         ToolTip.Tip="Copy optimized SQL" AutomationProperties.Name="Copy optimized SQL">
                                     <Grid Width="18" Height="18">
                                         <Border Width="10" Height="12" BorderBrush="#53647B" BorderThickness="1.5"
@@ -136,7 +160,7 @@
                                     </Grid>
                                 </Button>
                                 <Button x:Name="EditOptimizedSqlBtn" Classes="secondary" Padding="10,8"
-                                        Command="{Binding ToggleOutputEditingCommand}" IsEnabled="{Binding HasOptimizationResult}"
+                                        Command="{Binding ToggleOutputEditingCommand}" IsEnabled="{Binding CanUseOutputActions}"
                                         ToolTip.Tip="{Binding EditActionName}" AutomationProperties.Name="{Binding EditActionName}">
                                     <Grid Width="18" Height="18">
                                         <TextBlock Text="✎" Foreground="#53647B" FontSize="16"
@@ -151,7 +175,7 @@
                                     </Grid>
                                 </Button>
                                 <Button x:Name="SaveOptimizedSqlBtn" Classes="secondary" Padding="10,8"
-                                        Click="SaveOptimizedSql_Click" IsEnabled="{Binding HasOptimizationResult}"
+                                        Click="SaveOptimizedSql_Click" IsEnabled="{Binding CanUseOutputActions}"
                                         ToolTip.Tip="Save optimized SQL" AutomationProperties.Name="Save optimized SQL">
                                     <Grid Width="18" Height="18">
                                         <Border Width="14" Height="15" BorderBrush="#53647B" BorderThickness="1.5"
@@ -185,16 +209,17 @@
                                                  IsVisible="{Binding IsOptimizedEditorVisible}" AcceptsReturn="True"
                                                  TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Auto"
                                                  ScrollViewer.HorizontalScrollBarVisibility="Auto" FontFamily="Cascadia Mono,Consolas,monospace"
-                                                 FontSize="13" Padding="20" BorderThickness="0" Background="Transparent"
+                                                 FontSize="13" Padding="16" BorderThickness="0" Background="Transparent"
                                                  Foreground="#24344C" PlaceholderText="Your optimized query will appear here." />
-                                        <Border IsVisible="{Binding IsPreviewDiffMode}" Background="#FBFCFE">
-                                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                                                <ItemsControl ItemsSource="{Binding DiffLines}" Margin="16">
+                                        <Border IsVisible="{Binding IsDiffVisible}" Background="#FBFCFE">
+                                            <ScrollViewer x:Name="OutputDiffScrollViewer" ScrollChanged="DiffScrollViewer_ScrollChanged"
+                                                          VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                                <ItemsControl ItemsSource="{Binding OptimizedDiffLines}" Margin="16,12">
                                                     <ItemsControl.ItemTemplate>
-                                                        <DataTemplate x:DataType="vm:DiffLineViewModel">
-                                                            <Border Background="{Binding Background}" CornerRadius="5" Padding="9,5" Margin="0,0,0,5"
+                                                        <DataTemplate x:DataType="vm:DiffSideLineViewModel">
+                                                            <Border Background="{Binding Background}" Padding="8,4"
                                                                     ToolTip.Tip="{Binding Tooltip}">
-                                                                <Grid ColumnDefinitions="42,*">
+                                                                <Grid ColumnDefinitions="38,*">
                                                                     <TextBlock Text="{Binding LineNumber}" Foreground="#91A0B3" FontSize="11"
                                                                                FontFamily="Cascadia Mono,Consolas,monospace"
                                                                                VerticalAlignment="Center" />
@@ -211,15 +236,20 @@
                                     </Grid>
                                 </Grid>
                             </Border>
-                            <Border Grid.Row="1" Background="#F5F8FC" BorderBrush="#E1E8F1" BorderThickness="0,1,0,0"
-                                    Padding="18,14" CornerRadius="0,0,13,13">
+                            <Border Grid.Row="1" IsVisible="{Binding IsPerformanceNotesVisible}" Background="#F5F8FC" BorderBrush="#E1E8F1" BorderThickness="0,1,0,0"
+                                    Padding="16,10" CornerRadius="0,0,15,15">
                                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                                    <Border Width="30" Height="30" CornerRadius="9" Background="#E8F0FF" VerticalAlignment="Top">
-                                        <TextBlock Text="✦" Foreground="#246BFE" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <Border Width="30" Height="30" CornerRadius="9" Background="#FDEDEE" VerticalAlignment="Top">
+                                        <TextBlock Text="03" Foreground="#A9363E" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                     <StackPanel Grid.Column="1" Spacing="4">
-                                        <TextBlock Text="Performance notes" Foreground="#26364D" FontSize="12" FontWeight="SemiBold" />
-                                        <ScrollViewer MaxHeight="115" VerticalScrollBarVisibility="Auto">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Text="Performance notes" Foreground="#26364D" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                            <Button Grid.Column="1" Classes="secondary" Padding="8,4" Content="Copy notes"
+                                                    IsEnabled="{Binding AreWorkspaceActionsEnabled}"
+                                                    Click="CopyPerformanceNotes_Click" ToolTip.Tip="Copy all performance notes" />
+                                        </Grid>
+                                        <ScrollViewer MaxHeight="96" VerticalScrollBarVisibility="Auto">
                                             <TextBlock Text="{Binding Findings}"
                                                        Foreground="#68778D" FontSize="11" LineHeight="17" TextWrapping="Wrap" />
                                         </ScrollViewer>
@@ -229,7 +259,12 @@
                         </Grid>
                     </Grid>
                 </Border>
-            </Grid>
+                <Border Grid.Column="1" Width="2" Background="#DCE4EF" CornerRadius="1"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" />
+                <GridSplitter Grid.Column="1" Classes="paneSplitter" MinWidth="12" MaxWidth="12"
+                              ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"
+                              Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                              ToolTip.Tip="Drag to resize the SQL panes" />
         </Grid>
 
         <Border Grid.Row="2" Background="#E9EEF5" BorderBrush="#DCE4EF" BorderThickness="0,1,0,0" Padding="32,11">

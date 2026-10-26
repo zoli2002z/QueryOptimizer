@@ -15,6 +15,7 @@ public partial class MainWindow : Window
 {
     private readonly MainWindowViewModel _viewModel;
     private IStorageFile? _savedSqlFile;
+    private bool _isSyncingDiffScroll;
 
     public MainWindow() : this(new MainWindowViewModel(new SqlOptimizationEngine(), new DiffPreviewMapper()))
     {
@@ -26,6 +27,20 @@ public partial class MainWindow : Window
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         _viewModel.OptimizationCompleted += (_, _) => _savedSqlFile = null;
         DataContext = _viewModel;
+    }
+
+    private void DiffScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e)
+    {
+        if (_isSyncingDiffScroll || sender is not ScrollViewer source) return;
+
+        var target = ReferenceEquals(source, InputDiffScrollViewer)
+            ? OutputDiffScrollViewer
+            : InputDiffScrollViewer;
+        if (target.Offset == source.Offset) return;
+
+        _isSyncingDiffScroll = true;
+        target.Offset = source.Offset;
+        _isSyncingDiffScroll = false;
     }
 
     private async void SelectSqlFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -151,5 +166,18 @@ public partial class MainWindow : Window
 
         await clipboard.SetTextAsync(_viewModel.SqlToCopy);
         _viewModel.SetStatus("Optimized SQL copied to clipboard");
+    }
+
+    private async void CopyPerformanceNotes_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard is null)
+        {
+            _viewModel.SetStatus("Clipboard is unavailable");
+            return;
+        }
+
+        await clipboard.SetTextAsync(_viewModel.Findings);
+        _viewModel.SetStatus("Performance notes copied to clipboard");
     }
 }

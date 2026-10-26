@@ -92,10 +92,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             if (!SetProperty(ref _isPreviewDiffMode, value)) return;
             OnPropertyChanged(nameof(PreviewButtonText));
             OnPropertyChanged(nameof(IsOptimizedEditorVisible));
+            OnPropertyChanged(nameof(IsInputEditorVisible));
+            OnPropertyChanged(nameof(IsDiffVisible));
+            OnPropertyChanged(nameof(IsPerformanceNotesVisible));
+            OnPropertyChanged(nameof(AreWorkspaceActionsEnabled));
+            OnPropertyChanged(nameof(CanUseOutputActions));
         }
     }
 
     public bool IsOptimizedEditorVisible => !IsPreviewDiffMode;
+    public bool IsInputEditorVisible => !IsPreviewDiffMode;
+    public bool IsDiffVisible => IsPreviewDiffMode;
+    public bool IsPerformanceNotesVisible => !IsPreviewDiffMode;
+    public bool AreWorkspaceActionsEnabled => !IsPreviewDiffMode;
+    public bool CanUseOutputActions => HasOptimizationResult && AreWorkspaceActionsEnabled;
     public string PreviewButtonText => IsPreviewDiffMode ? "Show optimized SQL" : "Preview changes";
 
     public bool IsOutputReadOnly
@@ -113,6 +123,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public string EditActionName => IsOutputReadOnly ? "Enable editing" : "Disable editing";
 
     public ObservableCollection<DiffLineViewModel> DiffLines { get; } = new();
+    public ObservableCollection<DiffSideLineViewModel> OriginalDiffLines { get; } = new();
+    public ObservableCollection<DiffSideLineViewModel> OptimizedDiffLines { get; } = new();
     public ICommand OptimizeCommand { get; }
     public ICommand TogglePreviewCommand { get; }
     public ICommand ToggleOutputEditingCommand { get; }
@@ -152,11 +164,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         DiffLines.Clear();
         foreach (var line in _diffPreviewMapper.Map(_lastOptimizationResult))
             DiffLines.Add(line);
+        OriginalDiffLines.Clear();
+        OptimizedDiffLines.Clear();
+        var sideBySide = _diffPreviewMapper.MapSideBySide(_lastOptimizationResult);
+        foreach (var line in sideBySide.Original) OriginalDiffLines.Add(line);
+        foreach (var line in sideBySide.Optimized) OptimizedDiffLines.Add(line);
 
         IsPreviewDiffMode = false;
         IsOutputReadOnly = true;
         OnPropertyChanged(nameof(IsUnsaved));
         OnPropertyChanged(nameof(HasOptimizationResult));
+        OnPropertyChanged(nameof(CanUseOutputActions));
         OnPropertyChanged(nameof(SqlToCopy));
         OnPropertyChanged(nameof(CanPreviewChanges));
         Status = _lastOptimizationResult.SummaryStatus;
