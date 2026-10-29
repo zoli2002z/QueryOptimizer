@@ -6,8 +6,11 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
+using Avalonia.Media;
 using QueryOptimizer.Optimization;
+using QueryOptimizer.Presentation;
 using QueryOptimizer.Presentation.ViewModels;
+using Ellipse = Avalonia.Controls.Shapes.Ellipse;
 
 namespace QueryOptimizer.Presentation.Views;
 
@@ -16,6 +19,47 @@ public partial class MainWindow : Window
     private readonly MainWindowViewModel _viewModel;
     private IStorageFile? _savedSqlFile;
     private bool _isSyncingDiffScroll;
+
+    private void LanguagePicker_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (sender is not Button button) return;
+
+        var menu = new MenuFlyout();
+        foreach (var language in _viewModel.Languages)
+        {
+            var marker = new Ellipse
+            {
+                Width = 7,
+                Height = 7,
+                Fill = language.IsSelected ? Brush.Parse("#246BFE") : Brushes.Transparent,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+            var code = new TextBlock
+            {
+                Text = language.DisplayCode,
+                FontSize = 12,
+                FontWeight = language.IsSelected ? FontWeight.Bold : FontWeight.SemiBold,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+            var content = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Spacing = 10,
+                Children = { marker, code }
+            };
+            var item = new MenuItem { Header = content, Tag = language };
+            item.Click += LanguageOption_Click;
+            menu.Items.Add(item);
+        }
+
+        menu.ShowAt(button);
+    }
+
+    private void LanguageOption_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (sender is MenuItem { Tag: LanguageOption language })
+            _viewModel.SelectedLanguage = language;
+    }
 
     public MainWindow() : this(new MainWindowViewModel(new SqlOptimizationEngine(), new DiffPreviewMapper()))
     {
@@ -47,11 +91,11 @@ public partial class MainWindow : Window
     {
         var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Select SQL file",
+            Title = _viewModel["SelectSqlFile"],
             AllowMultiple = false,
             FileTypeFilter = new[]
             {
-                new FilePickerFileType("SQL files") { Patterns = new[] { "*.sql" } },
+                new FilePickerFileType(_viewModel["SqlFiles"]) { Patterns = new[] { "*.sql" } },
                 FilePickerFileTypes.All
             }
         });
@@ -67,11 +111,11 @@ public partial class MainWindow : Window
         }
         catch (IOException)
         {
-            _viewModel.SetStatus($"Could not read {file.Name}");
+            _viewModel.SetStatus(string.Format(_viewModel["CouldNotRead"], file.Name));
         }
         catch (UnauthorizedAccessException)
         {
-            _viewModel.SetStatus($"Access denied for {file.Name}");
+            _viewModel.SetStatus(string.Format(_viewModel["AccessDenied"], file.Name));
         }
     }
 
@@ -98,11 +142,11 @@ public partial class MainWindow : Window
         }
         catch (IOException)
         {
-            _viewModel.SetStatus($"Could not read {file.Name}");
+            _viewModel.SetStatus(string.Format(_viewModel["CouldNotRead"], file.Name));
         }
         catch (UnauthorizedAccessException)
         {
-            _viewModel.SetStatus($"Access denied for {file.Name}");
+            _viewModel.SetStatus(string.Format(_viewModel["AccessDenied"], file.Name));
         }
     }
 
@@ -110,7 +154,7 @@ public partial class MainWindow : Window
     {
         if (!_viewModel.HasOptimizationResult || string.IsNullOrWhiteSpace(_viewModel.OptimizedSql))
         {
-            _viewModel.SetStatus("Optimize a query before saving the result");
+            _viewModel.SetStatus(_viewModel["OptimizeBeforeSave"]);
             return;
         }
 
@@ -118,12 +162,12 @@ public partial class MainWindow : Window
         {
             _savedSqlFile = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
-                Title = "Save optimized SQL",
+                Title = _viewModel["SaveSql"],
                 SuggestedFileName = "query_optimizer_optimized_sql.sql",
                 DefaultExtension = "sql",
                 FileTypeChoices = new[]
                 {
-                    new FilePickerFileType("SQL files") { Patterns = new[] { "*.sql" } }
+                    new FilePickerFileType(_viewModel["SqlFiles"]) { Patterns = new[] { "*.sql" } }
                 }
             });
             if (_savedSqlFile is null) return;
@@ -141,11 +185,11 @@ public partial class MainWindow : Window
         }
         catch (IOException)
         {
-            _viewModel.SetStatus($"Could not save {_savedSqlFile.Name}");
+            _viewModel.SetStatus(string.Format(_viewModel["CouldNotSave"], _savedSqlFile.Name));
         }
         catch (UnauthorizedAccessException)
         {
-            _viewModel.SetStatus($"Access denied for {_savedSqlFile.Name}");
+            _viewModel.SetStatus(string.Format(_viewModel["AccessDenied"], _savedSqlFile.Name));
         }
     }
 
@@ -153,19 +197,19 @@ public partial class MainWindow : Window
     {
         if (!_viewModel.HasOptimizationResult)
         {
-            _viewModel.SetStatus("Optimize a query before copying the result");
+            _viewModel.SetStatus(_viewModel["OptimizeBeforeCopy"]);
             return;
         }
 
         var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
         if (clipboard is null)
         {
-            _viewModel.SetStatus("Clipboard is unavailable");
+            _viewModel.SetStatus(_viewModel["ClipboardUnavailable"]);
             return;
         }
 
         await clipboard.SetTextAsync(_viewModel.SqlToCopy);
-        _viewModel.SetStatus("Optimized SQL copied to clipboard");
+        _viewModel.SetStatus(_viewModel["CopiedSql"]);
     }
 
     private async void CopyPerformanceNotes_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -173,11 +217,11 @@ public partial class MainWindow : Window
         var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
         if (clipboard is null)
         {
-            _viewModel.SetStatus("Clipboard is unavailable");
+            _viewModel.SetStatus(_viewModel["ClipboardUnavailable"]);
             return;
         }
 
         await clipboard.SetTextAsync(_viewModel.Findings);
-        _viewModel.SetStatus("Performance notes copied to clipboard");
+        _viewModel.SetStatus(_viewModel["CopiedNotes"]);
     }
 }

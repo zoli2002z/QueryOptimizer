@@ -85,6 +85,21 @@
         <Style Selector="Button.primary:pointerover">
             <Setter Property="Background" Value="#1D4ED8" />
         </Style>
+        <Style Selector="Button.languageSelector">
+            <Setter Property="Background" Value="{DynamicResource SurfaceMuted}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="11" />
+            <Setter Property="Padding" Value="8,5" />
+        </Style>
+        <Style Selector="Button.languageSelector:pointerover">
+            <Setter Property="Background" Value="{DynamicResource AccentHover}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+        </Style>
+        <Style Selector="Button.languageSelector:pressed">
+            <Setter Property="Background" Value="{DynamicResource AccentSoft}" />
+        </Style>
         <Style Selector="GridSplitter.paneSplitter:pointerover">
             <Setter Property="Background" Value="{DynamicResource AccentHover}" />
         </Style>

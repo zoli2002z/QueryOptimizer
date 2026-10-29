@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Avalonia;
@@ -21,17 +22,21 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private string _optimizedSql = string.Empty;
     private string _optimizedFileName = "OPTIMIZED.SQL";
     private string _status = "Ready when you are";
-    private string _findings = "Run an analysis to see query patterns and practical suggestions.";
+    private string _findings = string.Empty;
     private string? _savedSql;
     private OptimizationResult? _lastOptimizationResult;
     private bool _isPreviewDiffMode;
     private bool _isOutputReadOnly = true;
     private bool _isDarkTheme;
+    private string _language = "en";
 
     public MainWindowViewModel(ISqlOptimizationService optimizer, IDiffPreviewMapper diffPreviewMapper)
     {
         _optimizer = optimizer ?? throw new ArgumentNullException(nameof(optimizer));
         _diffPreviewMapper = diffPreviewMapper ?? throw new ArgumentNullException(nameof(diffPreviewMapper));
+        _language = LanguagePreferenceStore.LoadLanguage();
+        _status = T("Ready");
+        _findings = T("InitialFindings");
 
         OptimizeCommand = new RelayCommand(Optimize);
         TogglePreviewCommand = new RelayCommand(TogglePreview);
@@ -112,10 +117,50 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public bool IsPerformanceNotesVisible => !IsPreviewDiffMode;
     public bool AreWorkspaceActionsEnabled => !IsPreviewDiffMode;
     public bool CanUseOutputActions => HasOptimizationResult && AreWorkspaceActionsEnabled;
-    public string PreviewButtonText => IsPreviewDiffMode ? "Show optimized SQL" : "Preview changes";
+    public string PreviewButtonText => T(IsPreviewDiffMode ? "ShowOptimized" : "PreviewChanges");
 
     public bool IsDarkTheme => _isDarkTheme;
-    public string ThemeButtonText => IsDarkTheme ? "Light mode" : "Dark mode";
+    public string ThemeButtonText => T(IsDarkTheme ? "LightMode" : "DarkMode");
+    public IReadOnlyList<LanguageOption> Languages => Localization.Languages
+        .Select(option => option with { IsSelected = option.Code == _language })
+        .ToArray();
+    public string this[string key] => T(key);
+
+    public LanguageOption SelectedLanguage
+    {
+        get => Languages.First(option => option.Code == _language);
+        set
+        {
+            if (value is null || value.Code == _language) return;
+            _language = Languages.Any(option => option.Code == value.Code) ? value.Code : "en";
+            LanguagePreferenceStore.SaveLanguage(_language);
+            // Force every binding on the window to reevaluate against the new language,
+            // including indexer bindings used by localized XAML properties.
+            OnPropertyChanged(string.Empty);
+            OnPropertyChanged(nameof(SelectedLanguage));
+            OnPropertyChanged(nameof(Languages));
+            OnPropertyChanged("Item[]");
+            OnPropertyChanged(nameof(PreviewButtonText));
+            OnPropertyChanged(nameof(ThemeButtonText));
+            OnPropertyChanged(nameof(EditActionName));
+            if (_lastOptimizationResult is { } result)
+            {
+                Findings = string.Join(Environment.NewLine + Environment.NewLine,
+                    result.PerformanceNotes.Select(note => Localization.TranslateFinding(_language, note)));
+                Status = _language == "hu"
+                    ? $"{result.AppliedRewrites.Count} biztonságos módosítás alkalmazva; {result.PerformanceNotes.Count} teljesítmény-megjegyzés"
+                    : result.SummaryStatus;
+                RebuildDiffPreview(result);
+            }
+            else
+            {
+                Status = T("Ready");
+                Findings = T("InitialFindings");
+            }
+        }
+    }
+
+    private string T(string key) => Localization.Get(_language, key);
 
     public bool IsOutputReadOnly
     {
@@ -129,7 +174,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     }
 
     public bool IsEditSlashVisible => IsOutputReadOnly;
-    public string EditActionName => IsOutputReadOnly ? "Enable editing" : "Disable editing";
+    public string EditActionName => T(IsOutputReadOnly ? "EnableEditing" : "DisableEditing");
 
     public ObservableCollection<DiffLineViewModel> DiffLines { get; } = new();
     public ObservableCollection<DiffSideLineViewModel> OriginalDiffLines { get; } = new();
@@ -143,7 +188,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     {
         InputSql = sql;
         InputFileName = fileName;
-        Status = $"Loaded {fileName}";
+        Status = _language == "hu" ? $"Betöltve: {fileName}" : $"Loaded {fileName}";
     }
 
     public void SetStatus(string status) => Status = status;
@@ -153,14 +198,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         _savedSql = sql;
         OptimizedFileName = fileName;
         OnPropertyChanged(nameof(IsUnsaved));
-        Status = $"Saved {fileName}";
+        Status = _language == "hu" ? $"Mentve: {fileName}" : $"Saved {fileName}";
     }
 
     private void Optimize()
     {
         if (string.IsNullOrWhiteSpace(InputSql))
         {
-            Status = "Enter a query to optimize";
+            Status = T("EnterQuery");
             return;
         }
 
@@ -169,16 +214,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         _savedSql = null;
         OptimizedFileName = "OPTIMIZED.SQL";
         OptimizedSql = _lastOptimizationResult.OptimizedSql;
-        Findings = string.Join(Environment.NewLine + Environment.NewLine, _lastOptimizationResult.PerformanceNotes);
+        Findings = string.Join(Environment.NewLine + Environment.NewLine,
+            _lastOptimizationResult.PerformanceNotes.Select(note => Localization.TranslateFinding(_language, note)));
 
-        DiffLines.Clear();
-        foreach (var line in _diffPreviewMapper.Map(_lastOptimizationResult))
-            DiffLines.Add(line);
-        OriginalDiffLines.Clear();
-        OptimizedDiffLines.Clear();
-        var sideBySide = _diffPreviewMapper.MapSideBySide(_lastOptimizationResult);
-        foreach (var line in sideBySide.Original) OriginalDiffLines.Add(line);
-        foreach (var line in sideBySide.Optimized) OptimizedDiffLines.Add(line);
+        RebuildDiffPreview(_lastOptimizationResult);
 
         IsPreviewDiffMode = false;
         IsOutputReadOnly = true;
@@ -187,7 +226,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CanUseOutputActions));
         OnPropertyChanged(nameof(SqlToCopy));
         OnPropertyChanged(nameof(CanPreviewChanges));
-        Status = _lastOptimizationResult.SummaryStatus;
+        Status = _language == "hu"
+            ? $"{_lastOptimizationResult.AppliedRewrites.Count} biztonságos módosítás alkalmazva; {_lastOptimizationResult.PerformanceNotes.Count} teljesítmény-megjegyzés"
+            : _lastOptimizationResult.SummaryStatus;
     }
 
     private void TogglePreview()
@@ -200,7 +241,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     {
         if (!HasOptimizationResult) return;
         IsOutputReadOnly = !IsOutputReadOnly;
-        Status = IsOutputReadOnly ? "Optimized SQL editing disabled" : "Optimized SQL editing enabled";
+        Status = T(IsOutputReadOnly ? "EditingDisabled" : "EditingEnabled");
     }
 
     private void ToggleTheme()
@@ -214,10 +255,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ThemeButtonText));
 
         if (_lastOptimizationResult is null) return;
+        RebuildDiffPreview(_lastOptimizationResult);
+    }
+
+    private void RebuildDiffPreview(OptimizationResult result)
+    {
         DiffLines.Clear();
-        foreach (var line in _diffPreviewMapper.Map(_lastOptimizationResult))
+        foreach (var line in _diffPreviewMapper.Map(result, _language))
             DiffLines.Add(line);
-        var sideBySide = _diffPreviewMapper.MapSideBySide(_lastOptimizationResult);
+
+        var sideBySide = _diffPreviewMapper.MapSideBySide(result, _language);
         OriginalDiffLines.Clear();
         OptimizedDiffLines.Clear();
         foreach (var line in sideBySide.Original) OriginalDiffLines.Add(line);

@@ -6,12 +6,13 @@ using Avalonia;
 using Avalonia.Media;
 using Avalonia.Styling;
 using QueryOptimizer.Optimization;
+using QueryOptimizer.Presentation;
 
 namespace QueryOptimizer.Presentation.ViewModels;
 
 public sealed class DiffPreviewMapper : IDiffPreviewMapper
 {
-    public (IReadOnlyList<DiffSideLineViewModel> Original, IReadOnlyList<DiffSideLineViewModel> Optimized) MapSideBySide(OptimizationResult result)
+    public (IReadOnlyList<DiffSideLineViewModel> Original, IReadOnlyList<DiffSideLineViewModel> Optimized) MapSideBySide(OptimizationResult result, string language = "en")
     {
         ArgumentNullException.ThrowIfNull(result);
 
@@ -24,7 +25,7 @@ public sealed class DiffPreviewMapper : IDiffPreviewMapper
             var line = result.DiffLines[index];
             var tooltip = reasonsByLine.TryGetValue(index, out var reasons)
                 ? string.Join(Environment.NewLine + Environment.NewLine,
-                    reasons.Select(rewrite => $"{rewrite.Title}{Environment.NewLine}{rewrite.WhyItMatters}"))
+                    reasons.Select(rewrite => Localization.FormatRewrite(rewrite, language)))
                 : null;
 
             switch (line.Type)
@@ -53,7 +54,7 @@ public sealed class DiffPreviewMapper : IDiffPreviewMapper
     private static DiffSideLineViewModel Blank(string? tooltip, bool isDark) =>
         new(string.Empty, string.Empty, Brush.Parse(isDark ? "#1D2A3D" : "#F5F7FA"), Brush.Parse(isDark ? "#91A1B6" : "#91A0B3"), tooltip);
 
-    public IReadOnlyList<DiffLineViewModel> Map(OptimizationResult result)
+    public IReadOnlyList<DiffLineViewModel> Map(OptimizationResult result, string language = "en")
     {
         ArgumentNullException.ThrowIfNull(result);
 
@@ -71,7 +72,7 @@ public sealed class DiffPreviewMapper : IDiffPreviewMapper
             };
             var tooltip = reasonsByLine.TryGetValue(index, out var reasons)
                 ? string.Join(Environment.NewLine + Environment.NewLine,
-                    reasons.Select(rewrite => $"{rewrite.Title}{Environment.NewLine}{rewrite.WhyItMatters}"))
+                    reasons.Select(rewrite => Localization.FormatRewrite(rewrite, language)))
                 : null;
 
             rows.Add(new DiffLineViewModel(number, $"{marker}  {line.Text}",
