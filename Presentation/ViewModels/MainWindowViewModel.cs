@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Avalonia;
@@ -39,6 +40,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         _findings = T("InitialFindings");
 
         OptimizeCommand = new RelayCommand(Optimize);
+        FormatCommand = new RelayCommand(FormatInput);
         TogglePreviewCommand = new RelayCommand(TogglePreview);
         ToggleOutputEditingCommand = new RelayCommand(ToggleOutputEditing);
         ToggleThemeCommand = new RelayCommand(ToggleTheme);
@@ -102,6 +104,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         {
             if (!SetProperty(ref _isPreviewDiffMode, value)) return;
             OnPropertyChanged(nameof(PreviewButtonText));
+            OnPropertyChanged(nameof(PreviewButtonTooltip));
             OnPropertyChanged(nameof(IsOptimizedEditorVisible));
             OnPropertyChanged(nameof(IsInputEditorVisible));
             OnPropertyChanged(nameof(IsDiffVisible));
@@ -118,6 +121,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public bool AreWorkspaceActionsEnabled => !IsPreviewDiffMode;
     public bool CanUseOutputActions => HasOptimizationResult && AreWorkspaceActionsEnabled;
     public string PreviewButtonText => T(IsPreviewDiffMode ? "ShowOptimized" : "PreviewChanges");
+    public string PreviewButtonTooltip => T(IsPreviewDiffMode ? "ShowOptimizedTooltip" : "PreviewTooltip");
 
     public bool IsDarkTheme => _isDarkTheme;
     public string ThemeButtonText => T(IsDarkTheme ? "LightMode" : "DarkMode");
@@ -180,6 +184,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public ObservableCollection<DiffSideLineViewModel> OriginalDiffLines { get; } = new();
     public ObservableCollection<DiffSideLineViewModel> OptimizedDiffLines { get; } = new();
     public ICommand OptimizeCommand { get; }
+    public ICommand FormatCommand { get; }
     public ICommand TogglePreviewCommand { get; }
     public ICommand ToggleOutputEditingCommand { get; }
     public ICommand ToggleThemeCommand { get; }
@@ -192,6 +197,23 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     }
 
     public void SetStatus(string status) => Status = status;
+
+    private void FormatInput()
+    {
+        if (string.IsNullOrWhiteSpace(InputSql)) return;
+
+        // Formatting only changes whitespace. Protected SQL strings, quoted names, and comments
+        // are left untouched by SqlTextProcessor.
+        var processor = new SqlTextProcessor();
+        var formatted = processor.RewriteCode(InputSql, code => Regex.Replace(
+            code,
+            @"\s+(?=(?:SELECT|FROM|WHERE|GROUP\s+BY|HAVING|ORDER\s+BY|UNION(?:\s+ALL)?|LEFT\s+(?:OUTER\s+)?JOIN|RIGHT\s+(?:OUTER\s+)?JOIN|FULL\s+(?:OUTER\s+)?JOIN|INNER\s+JOIN|CROSS\s+JOIN|JOIN|ON|AND|OR)\b)",
+            match => match.Value.Contains('\n') ? match.Value : Environment.NewLine,
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
+
+        InputSql = formatted;
+        Status = T("FormattedQuery");
+    }
 
     public void MarkSaved(string fileName, string sql)
     {
