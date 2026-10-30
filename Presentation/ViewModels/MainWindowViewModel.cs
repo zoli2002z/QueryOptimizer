@@ -196,6 +196,30 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Status = _language == "hu" ? $"Betöltve: {fileName}" : $"Loaded {fileName}";
     }
 
+    public void ClearWorkspace()
+    {
+        InputSql = string.Empty;
+        OptimizedSql = string.Empty;
+        InputFileName = "QUERY.SQL";
+        OptimizedFileName = "OPTIMIZED.SQL";
+        _lastOptimizationResult = null;
+        _savedSql = null;
+        Findings = T("InitialFindings");
+        Status = T("Ready");
+        IsPreviewDiffMode = false;
+        IsOutputReadOnly = true;
+
+        DiffLines.Clear();
+        OriginalDiffLines.Clear();
+        OptimizedDiffLines.Clear();
+
+        OnPropertyChanged(nameof(IsUnsaved));
+        OnPropertyChanged(nameof(HasOptimizationResult));
+        OnPropertyChanged(nameof(CanUseOutputActions));
+        OnPropertyChanged(nameof(SqlToCopy));
+        OnPropertyChanged(nameof(CanPreviewChanges));
+    }
+
     public void SetStatus(string status) => Status = status;
 
     private void FormatInput()

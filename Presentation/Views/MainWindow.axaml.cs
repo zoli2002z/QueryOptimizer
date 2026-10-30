@@ -81,6 +81,14 @@ public partial class MainWindow : Window
             _viewModel.SelectedLanguage = language;
     }
 
+    private void ClearSql_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        _viewModel.ClearWorkspace();
+        _savedSqlFile = null;
+        _searchBox.Clear();
+        _searchBar.IsVisible = false;
+    }
+
     public MainWindow() : this(new MainWindowViewModel(new SqlOptimizationEngine(), new DiffPreviewMapper()))
     {
     }

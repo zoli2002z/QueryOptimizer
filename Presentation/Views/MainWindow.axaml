@@ -31,6 +31,18 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                    <Button Classes="secondary" Click="ClearSql_Click"
+                            ToolTip.Tip="{Binding [ClearSqlTooltip]}"
+                            AutomationProperties.Name="{Binding [ClearSql]}">
+                        <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                            <Grid Width="16" Height="16">
+                                <Path Data="M 3,10 L 9,4 Q 10,3 11,4 L 14,7 Q 15,8 14,9 L 8,14 Q 7,15 6,14 L 3,11 Q 2,10 3,10 Z M 6,13 L 12,7"
+                                      Stroke="{DynamicResource TextSecondary}" StrokeThickness="1.3"
+                                      Fill="Transparent" />
+                            </Grid>
+                            <TextBlock Text="{Binding [ClearSql]}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                     <Button x:Name="LanguagePickerButton" Classes="languageSelector"
                             Click="LanguagePicker_Click" ToolTip.Tip="{Binding [Language]}"
                             AutomationProperties.Name="{Binding [Language]}">
