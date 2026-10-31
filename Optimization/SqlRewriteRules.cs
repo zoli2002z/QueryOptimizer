@@ -59,7 +59,8 @@ internal static class SqlRewriteRules
         {
             log.Add(new AppliedRewrite(
                 "TAUTOLOGY_LEADING_TRUE", "Simplification", "Removed redundant '1 = 1 AND'",
-                match.Value.Trim(), "WHERE", "Strips unnecessary boolean tautologies from the WHERE clause."));
+                match.Value.Trim(), "WHERE", "Strips unnecessary boolean tautologies from the WHERE clause.")
+                { BeforeText = match.Value, AfterText = match.Groups[1].Value });
             return match.Groups[1].Value;
         });
 
@@ -68,7 +69,8 @@ internal static class SqlRewriteRules
         {
             log.Add(new AppliedRewrite(
                 "TAUTOLOGY_WHERE_TRUE", "Simplification", "Removed standalone 'WHERE 1 = 1'",
-                match.Value.Trim(), "(Removed)", "Eliminates a filter clause that evaluates to true for every row."));
+                match.Value.Trim(), "(Removed)", "Eliminates a filter clause that evaluates to true for every row.")
+                { BeforeText = match.Value, AfterText = string.Empty });
             return string.Empty;
         });
 
@@ -77,7 +79,8 @@ internal static class SqlRewriteRules
         {
             log.Add(new AppliedRewrite(
                 "TAUTOLOGY_AND_TRUE", "Simplification", "Removed always-true 'AND 1 = 1'",
-                match.Value.Trim(), "(Removed)", "Simplifies predicate evaluation by removing redundant conjunctions."));
+                match.Value.Trim(), "(Removed)", "Simplifies predicate evaluation by removing redundant conjunctions.")
+                { BeforeText = match.Value, AfterText = string.Empty });
             return string.Empty;
         });
 
@@ -86,7 +89,8 @@ internal static class SqlRewriteRules
         {
             log.Add(new AppliedRewrite(
                 "TAUTOLOGY_OR_FALSE", "Simplification", "Removed always-false 'OR 1 = 0'",
-                match.Value.Trim(), "(Removed)", "Simplifies predicate evaluation by removing dead disjunction branches."));
+                match.Value.Trim(), "(Removed)", "Simplifies predicate evaluation by removing dead disjunction branches.")
+                { BeforeText = match.Value, AfterText = string.Empty });
             return string.Empty;
         });
 
@@ -96,7 +100,8 @@ internal static class SqlRewriteRules
             var column = match.Groups[1].Value;
             log.Add(new AppliedRewrite(
                 "SARG_IDENTITY_MATH", "SARGability", $"Removed identity math on '{column}'",
-                match.Value.Trim(), column, $"Arithmetic expressions like '{match.Value.Trim()}' disable B-Tree index usage on '{column}'."));
+                match.Value.Trim(), column, $"Arithmetic expressions like '{match.Value.Trim()}' disable B-Tree index usage on '{column}'.")
+                { BeforeText = match.Value, AfterText = column });
             return column;
         });
 
@@ -106,7 +111,8 @@ internal static class SqlRewriteRules
             var column = match.Groups[1].Value;
             log.Add(new AppliedRewrite(
                 "SARG_UNWRAP_TRIM", "SARGability", $"Unwrapped TRIM() on '{column}'",
-                match.Value.Trim(), column, $"Wrapping '{column}' in TRIM() prevents the optimizer from using its index and column histogram."));
+                match.Value.Trim(), column, $"Wrapping '{column}' in TRIM() prevents the optimizer from using its index and column histogram.")
+                { BeforeText = match.Value, AfterText = column });
             return column;
         });
 
@@ -116,7 +122,8 @@ internal static class SqlRewriteRules
             var column = match.Groups[1].Value;
             log.Add(new AppliedRewrite(
                 "SARG_UNWRAP_TRUNC_RANGE", "SARGability", $"Removed redundant TRUNC() on '{column}'",
-                match.Value.Trim(), column, $"Since the right-hand boundary is already truncated to midnight, comparing '{column}' directly enables an Index Range Scan."));
+                match.Value.Trim(), column, $"Since the right-hand boundary is already truncated to midnight, comparing '{column}' directly enables an Index Range Scan.")
+                { BeforeText = match.Value, AfterText = column });
             return column;
         });
 
@@ -128,7 +135,8 @@ internal static class SqlRewriteRules
             var rewritten = $"{column} >= {rhs} AND {column} < {rhs} + 1";
             log.Add(new AppliedRewrite(
                 "SARG_TRUNC_EQUALITY_TO_RANGE", "SARGability", $"Converted TRUNC({column}) equality to half-open date range",
-                match.Value.Trim(), rewritten, $"Replaces function-wrapped date equality with an index-friendly range scan on '{column}'."));
+                match.Value.Trim(), rewritten, $"Replaces function-wrapped date equality with an index-friendly range scan on '{column}'.")
+                { BeforeText = match.Value, AfterText = rewritten });
             return rewritten;
         });
 
@@ -138,7 +146,8 @@ internal static class SqlRewriteRules
             var selectPrefix = match.Groups[1].Value;
             log.Add(new AppliedRewrite(
                 "REDUNDANT_DISTINCT", "Sort Elimination", "Removed redundant DISTINCT keyword",
-                "SELECT ... DISTINCT", "SELECT", "A selected key already makes these rows unique, so DISTINCT adds an unnecessary sort."));
+                "SELECT ... DISTINCT", "SELECT", "A selected key already makes these rows unique, so DISTINCT adds an unnecessary sort.")
+                { BeforeText = match.Value, AfterText = selectPrefix });
             return selectPrefix;
         });
 
@@ -152,7 +161,8 @@ internal static class SqlRewriteRules
             var rewritten = $"{column} IN ({list})";
             log.Add(new AppliedRewrite(
                 "SARG_CASE_IN_LIST", "SARGability", $"Normalized {function}({column}) IN (...) to uppercase literals",
-                match.Value.Trim(), rewritten, $"Removes the {function}() wrapper from '{column}' so the optimizer can use bitmap/B-Tree indexes and histograms."));
+                match.Value.Trim(), rewritten, $"Removes the {function}() wrapper from '{column}' so the optimizer can use bitmap/B-Tree indexes and histograms.")
+                { BeforeText = match.Value, AfterText = rewritten });
             return rewritten;
         });
 
@@ -167,7 +177,8 @@ internal static class SqlRewriteRules
             var rewritten = $"{column} {operation} {literal.ToUpperInvariant()}";
             log.Add(new AppliedRewrite(
                 "SARG_CASE_EQUALITY", "SARGability", $"Normalized {function}({column}) comparison",
-                match.Value.Trim(), rewritten, $"Removes {function}() from '{column}' to restore direct index access."));
+                match.Value.Trim(), rewritten, $"Removes {function}() from '{column}' to restore direct index access.")
+                { BeforeText = match.Value, AfterText = rewritten });
             return rewritten;
         });
     }
@@ -185,7 +196,8 @@ internal static class SqlRewriteRules
             log.Add(new AppliedRewrite(
                 "SUBQUERY_IN_TO_EXISTS", "Subquery Tuning", $"Converted '{outer} IN (SELECT ...)' to correlated EXISTS",
                 $"{outer} IN (SELECT {inner} ...)", $"EXISTS (SELECT 1 ... WHERE {inner} = {outer})",
-                $"Allows the optimizer to use a semi-join / composite primary key probe on '{inner}' and stop at the first matching row."));
+                $"Allows the optimizer to use a semi-join / composite primary key probe on '{inner}' and stop at the first matching row.")
+                { BeforeText = match.Value, AfterText = rewritten });
             return rewritten;
         });
 

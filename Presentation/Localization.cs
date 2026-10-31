@@ -84,7 +84,9 @@ public static class Localization
         ["LoadedFile"] = "Loaded {0}",
         ["SavedFile"] = "Saved {0}",
         ["SummaryChanged"] = "Applied {0} safe rewrite(s); found {1} performance note(s)",
-        ["SummaryUnchanged"] = "No safe rewrite applied; found {1} performance note(s)"
+        ["SummaryUnchanged"] = "No safe rewrite applied; found {1} performance note(s)",
+        ["RevertRewrite"] = "Revert",
+        ["AcceptRewrite"] = "Accept"
     };
 
     private static readonly IReadOnlyDictionary<string, string> Hungarian = new Dictionary<string, string>
@@ -150,7 +152,9 @@ public static class Localization
         ["SqlFiles"] = "SQL-fájlok",
         ["CouldNotRead"] = "Nem sikerült beolvasni: {0}",
         ["AccessDenied"] = "Nincs hozzáférés: {0}",
-        ["CouldNotSave"] = "Nem sikerült menteni: {0}"
+        ["CouldNotSave"] = "Nem sikerült menteni: {0}",
+        ["RevertRewrite"] = "Visszavonás",
+        ["AcceptRewrite"] = "Elfogadás"
     };
 
     public static string Get(string language, string key) =>

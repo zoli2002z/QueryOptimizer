@@ -16,7 +16,13 @@ public sealed record AppliedRewrite(
     string Title,
     string BeforeSnippet,
     string AfterSnippet,
-    string WhyItMatters);
+    string WhyItMatters)
+{
+    // Exact text is kept separately from the shorter, user-facing snippets so a
+    // review choice can be applied back to the SQL without guessing.
+    public string BeforeText { get; init; } = BeforeSnippet;
+    public string AfterText { get; init; } = AfterSnippet;
+}
 
 public sealed record SqlDiffLine(
     DiffType Type,

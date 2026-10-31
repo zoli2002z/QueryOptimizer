@@ -26,6 +26,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private string _findings = string.Empty;
     private string? _savedSql;
     private OptimizationResult? _lastOptimizationResult;
+    private OptimizationResult? _optimizationBaseline;
     private bool _isPreviewDiffMode;
     private bool _isOutputReadOnly = true;
     private bool _isDarkTheme;
@@ -95,7 +96,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     public bool HasOptimizationResult => _lastOptimizationResult is not null;
     public string SqlToCopy => _lastOptimizationResult?.OptimizedSql ?? string.Empty;
-    public bool CanPreviewChanges => _lastOptimizationResult?.HasChanges == true;
+    public bool CanPreviewChanges => RewriteReviews.Count > 0;
+    public string RewriteSummary => _language == "hu"
+        ? $"{RewriteReviews.Count} módosítás · {RewriteReviews.Count(item => item.IsAccepted)} elfogadva · {RewriteReviews.Count(item => !item.IsAccepted)} visszavonva"
+        : $"{RewriteReviews.Count} changes · {RewriteReviews.Count(item => item.IsAccepted)} accepted · {RewriteReviews.Count(item => !item.IsAccepted)} reverted";
 
     public bool IsPreviewDiffMode
     {
@@ -147,6 +151,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(PreviewButtonText));
             OnPropertyChanged(nameof(ThemeButtonText));
             OnPropertyChanged(nameof(EditActionName));
+            if (_optimizationBaseline is { } baseline)
+            {
+                var accepted = RewriteReviews.ToDictionary(item => item.Sequence, item => item.IsAccepted);
+                PopulateRewriteReviews(baseline, accepted);
+            }
             if (_lastOptimizationResult is { } result)
             {
                 Findings = string.Join(Environment.NewLine + Environment.NewLine,
@@ -183,6 +192,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public ObservableCollection<DiffLineViewModel> DiffLines { get; } = new();
     public ObservableCollection<DiffSideLineViewModel> OriginalDiffLines { get; } = new();
     public ObservableCollection<DiffSideLineViewModel> OptimizedDiffLines { get; } = new();
+    public ObservableCollection<RewriteReviewViewModel> RewriteReviews { get; } = new();
     public ICommand OptimizeCommand { get; }
     public ICommand FormatCommand { get; }
     public ICommand TogglePreviewCommand { get; }
@@ -203,6 +213,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         InputFileName = "QUERY.SQL";
         OptimizedFileName = "OPTIMIZED.SQL";
         _lastOptimizationResult = null;
+        _optimizationBaseline = null;
         _savedSql = null;
         Findings = T("InitialFindings");
         Status = T("Ready");
@@ -212,12 +223,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         DiffLines.Clear();
         OriginalDiffLines.Clear();
         OptimizedDiffLines.Clear();
+        RewriteReviews.Clear();
 
         OnPropertyChanged(nameof(IsUnsaved));
         OnPropertyChanged(nameof(HasOptimizationResult));
         OnPropertyChanged(nameof(CanUseOutputActions));
         OnPropertyChanged(nameof(SqlToCopy));
         OnPropertyChanged(nameof(CanPreviewChanges));
+        OnPropertyChanged(nameof(RewriteSummary));
     }
 
     public void SetStatus(string status) => Status = status;
@@ -255,7 +268,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             return;
         }
 
-        _lastOptimizationResult = _optimizer.OptimizeWithDetails(InputSql);
+        _optimizationBaseline = _optimizer.OptimizeWithDetails(InputSql);
+        _lastOptimizationResult = _optimizationBaseline;
+        PopulateRewriteReviews(_optimizationBaseline);
         OptimizationCompleted?.Invoke(this, EventArgs.Empty);
         _savedSql = null;
         OptimizedFileName = "OPTIMIZED.SQL";
@@ -272,6 +287,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CanUseOutputActions));
         OnPropertyChanged(nameof(SqlToCopy));
         OnPropertyChanged(nameof(CanPreviewChanges));
+        OnPropertyChanged(nameof(RewriteSummary));
         Status = _language == "hu"
             ? $"{_lastOptimizationResult.AppliedRewrites.Count} biztonságos módosítás alkalmazva; {_lastOptimizationResult.PerformanceNotes.Count} teljesítmény-megjegyzés"
             : _lastOptimizationResult.SummaryStatus;
@@ -315,6 +331,87 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         OptimizedDiffLines.Clear();
         foreach (var line in sideBySide.Original) OriginalDiffLines.Add(line);
         foreach (var line in sideBySide.Optimized) OptimizedDiffLines.Add(line);
+    }
+
+    private void RebuildReviewedResult()
+    {
+        if (_optimizationBaseline is not { } baseline) return;
+
+        var sql = baseline.OriginalSql;
+        foreach (var review in RewriteReviews.OrderBy(item => item.Sequence))
+        {
+            if (!review.IsAccepted || string.IsNullOrEmpty(review.Rewrite.BeforeText)) continue;
+            var index = sql.IndexOf(review.Rewrite.BeforeText, StringComparison.Ordinal);
+            if (index < 0) index = sql.IndexOf(review.Rewrite.BeforeText, StringComparison.OrdinalIgnoreCase);
+            if (index < 0) continue;
+            sql = sql[..index] + review.Rewrite.AfterText + sql[(index + review.Rewrite.BeforeText.Length)..];
+        }
+
+        var activeRewrites = RewriteReviews.Where(review => review.IsAccepted).OrderBy(item => item.Sequence)
+            .Select(review => review.Rewrite).ToArray();
+        var notes = _optimizer.Analyze(sql);
+        _lastOptimizationResult = baseline with
+        {
+            OptimizedSql = sql,
+            AppliedRewrites = activeRewrites,
+            PerformanceNotes = notes,
+            DiffLines = _optimizer.BuildLineDiff(baseline.OriginalSql, sql)
+        };
+        OptimizedSql = sql;
+        Findings = string.Join(Environment.NewLine + Environment.NewLine,
+            notes.Select(note => Localization.TranslateFinding(_language, note)));
+        RebuildDiffPreview(_lastOptimizationResult);
+        OnPropertyChanged(nameof(SqlToCopy));
+        OnPropertyChanged(nameof(IsUnsaved));
+        OnPropertyChanged(nameof(RewriteSummary));
+        Status = RewriteSummary;
+    }
+
+    private void PopulateRewriteReviews(OptimizationResult baseline, IReadOnlyDictionary<int, bool>? acceptedBySequence = null)
+    {
+        RewriteReviews.Clear();
+        var usedPositions = new Dictionary<string, int>(StringComparer.Ordinal);
+        var ordered = new List<RewriteReviewViewModel>(baseline.AppliedRewrites.Count);
+        for (var sequence = 0; sequence < baseline.AppliedRewrites.Count; sequence++)
+        {
+            var rewrite = baseline.AppliedRewrites[sequence];
+            var position = FindRewritePosition(baseline, rewrite, usedPositions);
+            var isAccepted = acceptedBySequence is null || !acceptedBySequence.TryGetValue(sequence, out var accepted) || accepted;
+            ordered.Add(new RewriteReviewViewModel(rewrite, sequence, position, RebuildReviewedResult, _language, isAccepted));
+        }
+
+        foreach (var review in ordered.OrderBy(item => item.SqlOrder).ThenBy(item => item.Sequence))
+            RewriteReviews.Add(review);
+        OnPropertyChanged(nameof(CanPreviewChanges));
+        OnPropertyChanged(nameof(RewriteSummary));
+    }
+
+    private static int FindRewritePosition(OptimizationResult baseline, AppliedRewrite rewrite, IDictionary<string, int> usedPositions)
+    {
+        var text = rewrite.BeforeText;
+        var searchSql = baseline.OriginalSql;
+        if (string.IsNullOrEmpty(text) || searchSql.IndexOf(text, StringComparison.Ordinal) < 0)
+        {
+            text = rewrite.AfterText;
+            searchSql = baseline.OptimizedSql;
+        }
+        if (string.IsNullOrEmpty(text)) return int.MaxValue;
+
+        var occurrence = usedPositions.TryGetValue(text, out var count) ? count : 0;
+        var position = -1;
+        var start = 0;
+        for (var current = 0; current <= occurrence; current++)
+        {
+            position = searchSql.IndexOf(text, start, StringComparison.OrdinalIgnoreCase);
+            if (position < 0)
+            {
+                position = -1;
+                break;
+            }
+            start = position + Math.Max(1, text.Length);
+        }
+        usedPositions[text] = occurrence + 1;
+        return position < 0 ? int.MaxValue : position;
     }
 
     private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
