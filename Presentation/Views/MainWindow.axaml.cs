@@ -23,6 +23,17 @@ namespace QueryOptimizer.Presentation.Views;
 public partial class MainWindow : Window
 {
     private readonly MainWindowViewModel _viewModel;
+    private Grid _workspaceGrid = null!;
+    private Grid _inputHeader = null!;
+    private Grid _outputHeader = null!;
+    private StackPanel _inputHeaderTitle = null!;
+    private StackPanel _outputHeaderTitle = null!;
+    private WrapPanel _inputToolbar = null!;
+    private WrapPanel _outputToolbar = null!;
+    private TextBlock[] _inputToolbarLabels = null!;
+    private TextBlock[] _outputToolbarLabels = null!;
+    private double _inputToolbarExpandedWidth;
+    private double _outputToolbarExpandedWidth;
     private TextEditor _inputEditor = null!;
     private TextEditor _outputEditor = null!;
     private Border _searchBar = null!;
@@ -96,6 +107,25 @@ public partial class MainWindow : Window
     public MainWindow(MainWindowViewModel viewModel)
     {
         AvaloniaXamlLoader.Load(this);
+        _workspaceGrid = this.FindControl<Grid>("WorkspaceGrid")!;
+        _inputHeader = this.FindControl<Grid>("InputHeader")!;
+        _outputHeader = this.FindControl<Grid>("OutputHeader")!;
+        _inputHeaderTitle = this.FindControl<StackPanel>("InputHeaderTitle")!;
+        _outputHeaderTitle = this.FindControl<StackPanel>("OutputHeaderTitle")!;
+        _inputToolbar = this.FindControl<WrapPanel>("InputToolbar")!;
+        _outputToolbar = this.FindControl<WrapPanel>("OutputToolbar")!;
+        _inputToolbarLabels = new[]
+        {
+            this.FindControl<TextBlock>("FormatButtonLabel")!,
+            this.FindControl<TextBlock>("FindButtonLabel")!,
+            this.FindControl<TextBlock>("OpenButtonLabel")!
+        };
+        _outputToolbarLabels = new[]
+        {
+            this.FindControl<TextBlock>("CopyButtonLabel")!,
+            this.FindControl<TextBlock>("EditButtonLabel")!,
+            this.FindControl<TextBlock>("SaveButtonLabel")!
+        };
         _inputEditor = this.FindControl<TextEditor>("InputEditor")!;
         _outputEditor = this.FindControl<TextEditor>("OutputEditor")!;
         _searchBar = this.FindControl<Border>("SearchBar")!;
@@ -105,6 +135,10 @@ public partial class MainWindow : Window
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         _viewModel.OptimizationCompleted += (_, _) => _savedSqlFile = null;
         DataContext = _viewModel;
+        _inputHeader.SizeChanged += (_, _) => UpdateToolbarLabels(
+            _inputHeader, _inputHeaderTitle, _inputToolbar, _inputToolbarLabels, ref _inputToolbarExpandedWidth);
+        _outputHeader.SizeChanged += (_, _) => UpdateToolbarLabels(
+            _outputHeader, _outputHeaderTitle, _outputToolbar, _outputToolbarLabels, ref _outputToolbarExpandedWidth);
         _inputEditor.Options.AllowScrollBelowDocument = false;
         _outputEditor.Options.AllowScrollBelowDocument = false;
         _inputEditor.Text = _viewModel.InputSql;
@@ -125,6 +159,12 @@ public partial class MainWindow : Window
         };
         _viewModel.PropertyChanged += (_, args) =>
         {
+            if (args.PropertyName == nameof(MainWindowViewModel.IsDiffVisible) && !_viewModel.IsDiffVisible)
+            {
+                _workspaceGrid.RowDefinitions[0].Height = GridLength.Star;
+                _workspaceGrid.RowDefinitions[1].Height = GridLength.Auto;
+                _workspaceGrid.RowDefinitions[2].Height = GridLength.Auto;
+            }
             if (args.PropertyName is null or nameof(MainWindowViewModel.InputSql))
             {
                 if (!string.Equals(_inputEditor.Text, _viewModel.InputSql, StringComparison.Ordinal))
@@ -142,6 +182,27 @@ public partial class MainWindow : Window
         _inputEditor.SyntaxHighlighting = sqlHighlighting;
         _outputEditor.SyntaxHighlighting = sqlHighlighting;
         AddHandler(KeyDownEvent, MainWindow_KeyDown, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+    }
+
+    private static void UpdateToolbarLabels(
+        Grid header,
+        StackPanel title,
+        WrapPanel toolbar,
+        TextBlock[] labels,
+        ref double expandedToolbarWidth)
+    {
+        if (header.Bounds.Width <= 0 || title.Bounds.Width <= 0 || toolbar.Children.Count == 0)
+            return;
+
+        if (expandedToolbarWidth <= 0 && labels.All(label => label.IsVisible))
+            expandedToolbarWidth = toolbar.Children.Sum(child => child.DesiredSize.Width);
+
+        if (expandedToolbarWidth <= 0)
+            return;
+
+        var useCompactButtons = header.Bounds.Width < title.Bounds.Width + expandedToolbarWidth;
+        foreach (var label in labels)
+            label.IsVisible = !useCompactButtons;
     }
 
     private static void UpdateVerticalScrollBarVisibility(TextEditor editor)
