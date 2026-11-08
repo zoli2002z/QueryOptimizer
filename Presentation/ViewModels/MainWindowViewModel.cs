@@ -97,9 +97,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public bool HasOptimizationResult => _lastOptimizationResult is not null;
     public string SqlToCopy => _lastOptimizationResult?.OptimizedSql ?? string.Empty;
     public bool CanPreviewChanges => RewriteReviews.Count > 0;
-    public string RewriteSummary => _language == "hu"
-        ? $"{RewriteReviews.Count} módosítás · {RewriteReviews.Count(item => item.IsAccepted)} elfogadva · {RewriteReviews.Count(item => !item.IsAccepted)} visszavonva"
-        : $"{RewriteReviews.Count} changes · {RewriteReviews.Count(item => item.IsAccepted)} accepted · {RewriteReviews.Count(item => !item.IsAccepted)} reverted";
+    public string RewriteSummary => RewriteTextLocalization.FormatSummary(
+        _language,
+        RewriteReviews.Count,
+        RewriteReviews.Count(item => item.IsAccepted),
+        RewriteReviews.Count(item => !item.IsAccepted));
 
     public bool IsPreviewDiffMode
     {
@@ -271,6 +273,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         _optimizationBaseline = _optimizer.OptimizeWithDetails(InputSql);
         _lastOptimizationResult = _optimizationBaseline;
         PopulateRewriteReviews(_optimizationBaseline);
+        RebuildReviewedResult();
         OptimizationCompleted?.Invoke(this, EventArgs.Empty);
         _savedSql = null;
         OptimizedFileName = "OPTIMIZED.SQL";
@@ -376,8 +379,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         {
             var rewrite = baseline.AppliedRewrites[sequence];
             var position = FindRewritePosition(baseline, rewrite, usedPositions);
-            var isAccepted = acceptedBySequence is null || !acceptedBySequence.TryGetValue(sequence, out var accepted) || accepted;
-            ordered.Add(new RewriteReviewViewModel(rewrite, sequence, position, RebuildReviewedResult, _language, isAccepted));
+            var isAccepted = acceptedBySequence is not null && acceptedBySequence.TryGetValue(sequence, out var accepted)
+                ? accepted
+                : !rewrite.RequiresReview;
+            ordered.Add(new RewriteReviewViewModel(rewrite, sequence, position, baseline.OriginalSql, RebuildReviewedResult, _language, isAccepted));
         }
 
         foreach (var review in ordered.OrderBy(item => item.SqlOrder).ThenBy(item => item.Sequence))

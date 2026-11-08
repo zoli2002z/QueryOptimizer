@@ -191,24 +191,46 @@ public static class Localization
 
     public static string FormatRewrite(AppliedRewrite rewrite, string language)
     {
-        if (language != "hu")
-            return $"{rewrite.Title}{System.Environment.NewLine}{rewrite.WhyItMatters}";
-
+        var hu = language == "hu";
         var column = rewrite.AfterSnippet;
         var (title, reason) = rewrite.RuleId switch
         {
-            "TAUTOLOGY_LEADING_TRUE" => ("A felesleges '1 = 1 AND' eltávolítva", "Eltávolítja a szükségtelen logikai azonosságot a WHERE részből."),
-            "TAUTOLOGY_WHERE_TRUE" => ("Az önálló 'WHERE 1 = 1' eltávolítva", "Eltávolítja azt a szűrési feltételt, amely minden sorra igaz."),
-            "TAUTOLOGY_AND_TRUE" => ("A mindig igaz 'AND 1 = 1' eltávolítva", "Egyszerűsíti a feltétel kiértékelését a felesleges logikai kapcsolat eltávolításával."),
-            "TAUTOLOGY_OR_FALSE" => ("A mindig hamis 'OR 1 = 0' eltávolítva", "Egyszerűsíti a feltétel kiértékelését a hatástalan logikai ág eltávolításával."),
-            "SARG_IDENTITY_MATH" => ($"Az azonosságművelet eltávolítva erről: '{column}'", $"A(z) '{rewrite.BeforeSnippet}' aritmetikai kifejezés letilthatja a B-fa index használatát ezen az oszlopon: '{column}'."),
-            "SARG_UNWRAP_TRIM" => ($"A TRIM() eltávolítva erről: '{column}'", $"A TRIM() megakadályozhatja az index és az oszlophisztogram használatát ezen az oszlopon: '{column}'."),
-            "SARG_UNWRAP_TRUNC_RANGE" => ($"A felesleges TRUNC() eltávolítva erről: '{column}'", $"A közvetlen összehasonlítás lehetővé teszi az index tartománykeresését ezen az oszlopon: '{column}'."),
-            "SARG_TRUNC_EQUALITY_TO_RANGE" => ("A TRUNC() egyenlőség félig nyitott dátumtartománnyá alakítva", $"A függvénnyel burkolt dátum-egyenlőség indexbarát tartománykereséssé alakul ezen az oszlopon: '{column}'."),
-            "REDUNDANT_DISTINCT" => ("A felesleges DISTINCT kulcsszó eltávolítva", "A kiválasztott kulcs már egyedivé teszi a sorokat, ezért a DISTINCT szükségtelen rendezést okozna."),
-            "SARG_CASE_IN_LIST" => ("A CASE kifejezés IN feltétellé egyszerűsítve", "A függvényburkolat eltávolítása segíti a bitmap- vagy B-fa indexek és az oszlophisztogram használatát."),
-            "SARG_CASE_EQUALITY" => ("A CASE kifejezés közvetlen összehasonlítássá egyszerűsítve", "A függvény eltávolítása visszaállítja az oszlop közvetlen indexelérését."),
-            "SUBQUERY_IN_TO_EXISTS" => ("Az IN al-lekérdezés korrelált EXISTS feltétellé alakítva", "Az optimalizáló félig összekapcsolást vagy összetett elsődleges kulcsú keresést használhat, és az első találatnál megállhat."),
+            "TAUTOLOGY_LEADING_TRUE" => hu
+                ? ("A felesleges kezd\u0151 1 = 1 felt\u00E9tel elt\u00E1vol\u00EDt\u00E1sa", "Az 1 = 1 mindig igaz, ez\u00E9rt nem sz\u0171ri az eredm\u00E9nyt.")
+                : ("Remove the leading always-true condition", "1 = 1 is always true, so it does not filter the results."),
+            "TAUTOLOGY_WHERE_TRUE" => hu
+                ? ("Az \u00FCres WHERE felt\u00E9tel elt\u00E1vol\u00EDt\u00E1sa", "A WHERE 1 = 1 minden sort \u00E1tenged, nem sz\u0171ri az eredm\u00E9nyt.")
+                : ("Remove the always-true WHERE clause", "WHERE 1 = 1 allows every row through."),
+            "TAUTOLOGY_AND_TRUE" => hu
+                ? ("A felesleges AND 1 = 1 elt\u00E1vol\u00EDt\u00E1sa", "Az AND 1 = 1 nem v\u00E1ltoztatja meg a felt\u00E9tel eredm\u00E9ny\u00E9t.")
+                : ("Remove the unnecessary AND 1 = 1", "AND 1 = 1 does not change the condition's result."),
+            "TAUTOLOGY_OR_FALSE" => hu
+                ? ("A felesleges OR 1 = 0 elt\u00E1vol\u00EDt\u00E1sa", "Az OR 1 = 0 nem v\u00E1ltoztatja meg a felt\u00E9tel eredm\u00E9ny\u00E9t.")
+                : ("Remove the unnecessary OR 1 = 0", "OR 1 = 0 does not change the condition's result."),
+            "SARG_IDENTITY_MATH" => hu
+                ? ($"Az azonoss\u00E1gi m\u0171velet elhagy\u00E1sa: {column}", $"Egyszer\u0171s\u00EDthet\u0151: {rewrite.BeforeSnippet} \u2192 {column}. Ellen\u0151rizd az adatt\u00EDpust \u00E9s a sz\u00E1m\u00EDt\u00E1si pontoss\u00E1got.")
+                : ($"Remove identity arithmetic from {column}", $"{rewrite.BeforeSnippet} can simplify to {column}. Check that the change does not affect the data type or numeric precision."),
+            "SARG_UNWRAP_TRIM" => hu
+                ? ($"A TRIM elhagy\u00E1sa err\u0151l az oszlopr\u00F3l: {column}", "Ellen\u0151rizd, hogy a sz\u00F3k\u00F6z\u00F6k lev\u00E1g\u00E1sa nem r\u00E9sze-e a k\u00EDv\u00E1nt \u00F6sszehasonl\u00EDt\u00E1snak.")
+                : ($"Remove TRIM from {column}", "Check that trimming spaces is not part of the intended comparison."),
+            "SARG_UNWRAP_TRUNC_RANGE" => hu
+                ? ($"A d\u00E1tumoszlop k\u00F6zvetlen \u00F6sszehasonl\u00EDt\u00E1sa: {column}", "A TRUNC csak akkor hagyhat\u00F3 el, ha a jobb oldali d\u00E1tumhat\u00E1r \u00E9jf\u00E9lre esik.")
+                : ($"Compare the date column directly: {column}", "Remove TRUNC only if the right-hand date boundary is at midnight as expected."),
+            "SARG_TRUNC_EQUALITY_TO_RANGE" => hu
+                ? ("A TRUNC egyenl\u0151s\u00E9g d\u00E1tumtartom\u00E1nny\u00E1 alak\u00EDt\u00E1sa", "Ellen\u0151rizd az oszlop adatt\u00EDpus\u00E1t \u00E9s az id\u0151z\u00F3na-kezel\u00E9st a tartom\u00E1ny elfogad\u00E1sa el\u0151tt.")
+                : ("Replace TRUNC equality with a date range", "Check the column type and time-zone behavior before accepting the range."),
+            "REDUNDANT_DISTINCT" => hu
+                ? ("A DISTINCT elhagy\u00E1sa felt\u00E9telezett egyedis\u00E9g alapj\u00E1n", "Csak akkor fogadd el, ha az Oracle-s\u00E9ma egyedi kulcsa garant\u00E1lja a sorok egyedis\u00E9g\u00E9t.")
+                : ("Remove DISTINCT based on assumed uniqueness", "Accept only if a unique key in the Oracle schema guarantees these rows are unique."),
+            "SARG_CASE_IN_LIST" => hu
+                ? ($"A kis- \u00E9s nagybet\u0171s lista-\u00F6sszehasonl\u00EDt\u00E1s egyszer\u0171s\u00EDt\u00E9se: {column}", "Az eredm\u00E9ny f\u00FCgghet az Oracle-koll\u00E1ci\u00F3t\u00F3l \u00E9s az adatok bet\u0171z\u00E9s\u00E9t\u0151l. Ellen\u0151rizd ezeket elfogad\u00E1s el\u0151tt.")
+                : ($"Simplify the case-insensitive list comparison on {column}", "Results can depend on Oracle collation and stored letter casing. Check both before accepting."),
+            "SARG_CASE_EQUALITY" => hu
+                ? ($"A kis- \u00E9s nagybet\u0171s \u00F6sszehasonl\u00EDt\u00E1s egyszer\u0171s\u00EDt\u00E9se: {column}", "Az eredm\u00E9ny f\u00FCgghet az Oracle-koll\u00E1ci\u00F3t\u00F3l \u00E9s az adatok bet\u0171z\u00E9s\u00E9t\u0151l. Ellen\u0151rizd ezeket elfogad\u00E1s el\u0151tt.")
+                : ($"Simplify the case-insensitive comparison on {column}", "Results can depend on Oracle collation and stored letter casing. Check both before accepting."),
+            "SUBQUERY_IN_TO_EXISTS" => hu
+                ? ("Az IN allek\u00E9rdez\u00E9s \u00E1talak\u00EDt\u00E1sa EXISTS felt\u00E9tell\u00E9", "Ellen\u0151rizd a NULL \u00E9rt\u00E9kek \u00E9s az allek\u00E9rdez\u00E9s eredm\u00E9nyeinek hat\u00E1s\u00E1t elfogad\u00E1s el\u0151tt.")
+                : ("Convert the IN subquery to EXISTS", "Check how NULL values and subquery results affect the intended behavior before accepting."),
             _ => (rewrite.Title, rewrite.WhyItMatters)
         };
 

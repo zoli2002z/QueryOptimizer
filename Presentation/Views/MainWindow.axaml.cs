@@ -135,8 +135,12 @@ public partial class MainWindow : Window
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         _viewModel.OptimizationCompleted += (_, _) => _savedSqlFile = null;
         DataContext = _viewModel;
-        _inputHeader.SizeChanged += (_, _) => UpdateToolbarLabels(
-            _inputHeader, _inputHeaderTitle, _inputToolbar, _inputToolbarLabels, ref _inputToolbarExpandedWidth);
+        _inputHeader.SizeChanged += (_, _) =>
+        {
+            UpdateToolbarLabels(
+                _inputHeader, _inputHeaderTitle, _inputToolbar, _inputToolbarLabels, ref _inputToolbarExpandedWidth);
+            MatchOutputHeaderHeight();
+        };
         _outputHeader.SizeChanged += (_, _) => UpdateToolbarLabels(
             _outputHeader, _outputHeaderTitle, _outputToolbar, _outputToolbarLabels, ref _outputToolbarExpandedWidth);
         _inputEditor.Options.AllowScrollBelowDocument = false;
@@ -203,6 +207,12 @@ public partial class MainWindow : Window
         var useCompactButtons = header.Bounds.Width < title.Bounds.Width + expandedToolbarWidth;
         foreach (var label in labels)
             label.IsVisible = !useCompactButtons;
+    }
+
+    private void MatchOutputHeaderHeight()
+    {
+        if (_inputHeader.Bounds.Height > 0 && Math.Abs(_outputHeader.MinHeight - _inputHeader.Bounds.Height) > 0.5)
+            _outputHeader.MinHeight = _inputHeader.Bounds.Height;
     }
 
     private static void UpdateVerticalScrollBarVisibility(TextEditor editor)

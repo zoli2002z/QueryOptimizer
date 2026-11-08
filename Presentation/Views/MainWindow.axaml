@@ -328,12 +328,18 @@
                                                 BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1"
                                                 CornerRadius="9">
                                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                                                <StackPanel Spacing="3" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Title}" Foreground="{DynamicResource TextSecondary}"
+                                                <StackPanel Spacing="3" VerticalAlignment="Center" ToolTip.Tip="{Binding Tooltip}">
+                                                    <TextBlock Text="{Binding Title}" Foreground="{DynamicResource Accent}"
+                                                               FontSize="11" TextWrapping="Wrap" />
+                                                    <TextBlock Text="{Binding RuleLocation}" Foreground="{DynamicResource TextMuted}"
+                                                               FontSize="9" />
+                                                    <TextBlock Text="{Binding ReviewLabel}"
+                                                               Foreground="{DynamicResource TextMuted}" FontSize="9" />
+                                                    <TextBlock Text="{Binding WhySummary}" Foreground="{DynamicResource TextSecondary}"
                                                                FontSize="11" TextTrimming="CharacterEllipsis" />
                                                     <TextBlock Foreground="{DynamicResource TextMuted}" FontSize="10"
                                                                TextTrimming="CharacterEllipsis">
-                                                        <Run Text="{Binding BeforeSummary}" /><Run Text="  →  " /><Run Text="{Binding AfterSummary}" />
+                                                        <Run Text="{Binding BeforeSummary}" /><Run Text="  &#x2192;  " /><Run Text="{Binding AfterSummary}" />
                                                     </TextBlock>
                                                 </StackPanel>
                                                 <Button Grid.Column="1" Classes="secondary" Padding="10,4" FontSize="10"
