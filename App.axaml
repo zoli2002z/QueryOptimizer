@@ -3,31 +3,111 @@
              x:Class="QueryOptimizer.App"
              RequestedThemeVariant="Light">
 
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="WindowBackground" Color="#EEF2F7" />
+                    <SolidColorBrush x:Key="Surface" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="SurfaceSubtle" Color="#FBFCFE" />
+                    <SolidColorBrush x:Key="SurfaceMuted" Color="#F5F8FC" />
+                    <SolidColorBrush x:Key="SurfaceRaised" Color="#F8FAFD" />
+                    <SolidColorBrush x:Key="Border" Color="#DCE4EF" />
+                    <SolidColorBrush x:Key="BorderSubtle" Color="#E7ECF3" />
+                    <SolidColorBrush x:Key="TextPrimary" Color="#1B2A40" />
+                    <SolidColorBrush x:Key="TextSecondary" Color="#53647B" />
+                    <SolidColorBrush x:Key="TextMuted" Color="#8491A4" />
+                    <SolidColorBrush x:Key="TextCode" Color="#24344C" />
+                    <SolidColorBrush x:Key="Accent" Color="#246BFE" />
+                    <SolidColorBrush x:Key="AccentSoft" Color="#EEF4FF" />
+                    <SolidColorBrush x:Key="AccentHover" Color="#EAF1FC" />
+                    <SolidColorBrush x:Key="Success" Color="#15956A" />
+                    <SolidColorBrush x:Key="SuccessSoft" Color="#EAF8F3" />
+                    <SolidColorBrush x:Key="Danger" Color="#A9363E" />
+                    <SolidColorBrush x:Key="DangerSoft" Color="#FDEDEE" />
+                    <SolidColorBrush x:Key="WarningSoft" Color="#FFF4DF" />
+                    <SolidColorBrush x:Key="WarningBorder" Color="#F2D49A" />
+                    <SolidColorBrush x:Key="WarningText" Color="#8B5A0A" />
+                    <SolidColorBrush x:Key="FooterBackground" Color="#E9EEF5" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="WindowBackground" Color="#111827" />
+                    <SolidColorBrush x:Key="Surface" Color="#182233" />
+                    <SolidColorBrush x:Key="SurfaceSubtle" Color="#141E2D" />
+                    <SolidColorBrush x:Key="SurfaceMuted" Color="#1D2A3D" />
+                    <SolidColorBrush x:Key="SurfaceRaised" Color="#202D40" />
+                    <SolidColorBrush x:Key="Border" Color="#2D3B50" />
+                    <SolidColorBrush x:Key="BorderSubtle" Color="#263448" />
+                    <SolidColorBrush x:Key="TextPrimary" Color="#E8EEF7" />
+                    <SolidColorBrush x:Key="TextSecondary" Color="#B0BED1" />
+                    <SolidColorBrush x:Key="TextMuted" Color="#91A1B6" />
+                    <SolidColorBrush x:Key="TextCode" Color="#D3DDED" />
+                    <SolidColorBrush x:Key="Accent" Color="#6B9BFF" />
+                    <SolidColorBrush x:Key="AccentSoft" Color="#213654" />
+                    <SolidColorBrush x:Key="AccentHover" Color="#293D5B" />
+                    <SolidColorBrush x:Key="Success" Color="#5BD0A1" />
+                    <SolidColorBrush x:Key="SuccessSoft" Color="#1D3A35" />
+                    <SolidColorBrush x:Key="Danger" Color="#F08B92" />
+                    <SolidColorBrush x:Key="DangerSoft" Color="#402A36" />
+                    <SolidColorBrush x:Key="WarningSoft" Color="#403627" />
+                    <SolidColorBrush x:Key="WarningBorder" Color="#695333" />
+                    <SolidColorBrush x:Key="WarningText" Color="#F2C979" />
+                    <SolidColorBrush x:Key="FooterBackground" Color="#151F2E" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
         <Style Selector="Button">
-            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="CornerRadius" Value="9" />
             <Setter Property="Padding" Value="13,9" />
             <Setter Property="FontSize" Value="11" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
         <Style Selector="Button.secondary">
-            <Setter Property="Background" Value="#F1F5FA" />
-            <Setter Property="Foreground" Value="#42536B" />
-            <Setter Property="BorderBrush" Value="#E0E7F0" />
+            <Setter Property="Background" Value="{DynamicResource SurfaceRaised}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
             <Setter Property="BorderThickness" Value="1" />
         </Style>
         <Style Selector="Button.secondary:pointerover">
-            <Setter Property="Background" Value="#E7EDF6" />
+            <Setter Property="Background" Value="{DynamicResource AccentHover}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
         </Style>
         <Style Selector="Button.primary">
-            <Setter Property="Background" Value="#246BFE" />
+            <Setter Property="Background" Value="#2563EB" />
             <Setter Property="Foreground" Value="White" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Padding" Value="15,9" />
         </Style>
         <Style Selector="Button.primary:pointerover">
-            <Setter Property="Background" Value="#1559E8" />
+            <Setter Property="Background" Value="#1D4ED8" />
+        </Style>
+        <Style Selector="Button.languageSelector">
+            <Setter Property="Background" Value="{DynamicResource SurfaceMuted}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="11" />
+            <Setter Property="Padding" Value="8,5" />
+        </Style>
+        <Style Selector="Button.languageSelector:pointerover">
+            <Setter Property="Background" Value="{DynamicResource AccentHover}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+        </Style>
+        <Style Selector="Button.languageSelector:pressed">
+            <Setter Property="Background" Value="{DynamicResource AccentSoft}" />
+        </Style>
+        <Style Selector="MenuFlyoutPresenter.languageMenu">
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="Width" Value="52" />
+            <Setter Property="MaxWidth" Value="52" />
+        </Style>
+        <Style Selector="GridSplitter.paneSplitter:pointerover">
+            <Setter Property="Background" Value="{DynamicResource AccentHover}" />
         </Style>
     </Application.Styles>
 </Application>

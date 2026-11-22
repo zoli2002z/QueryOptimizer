@@ -1,0 +1,385 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:QueryOptimizer.Presentation.ViewModels"
+        xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+        xmlns:primitives="clr-namespace:Avalonia.Controls.Primitives;assembly=Avalonia.Controls"
+        xmlns:p="using:QueryOptimizer.Presentation"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignWidth="1440"
+        d:DesignHeight="900"
+        x:Class="QueryOptimizer.Presentation.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Query Optimizer"
+        Icon="avares://QueryOptimizer/icon/query_optimizer_icon.ico"
+        Width="1440"
+        Height="900"
+        WindowState="Maximized"
+        MinWidth="1100"
+        MinHeight="620"
+        Background="{DynamicResource WindowBackground}">
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Border Grid.Row="0" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="0,0,0,1" Padding="28,14">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <StackPanel Spacing="2" VerticalAlignment="Center">
+                        <TextBlock Text="Query Optimizer" Foreground="{DynamicResource TextPrimary}"
+                                   FontSize="17" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding [AppSubtitle]}" Foreground="{DynamicResource TextMuted}"
+                                   FontSize="11" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                    <Button Classes="secondary" Click="ClearSql_Click"
+                            ToolTip.Tip="{Binding [ClearSqlTooltip]}"
+                            AutomationProperties.Name="{Binding [ClearSql]}">
+                        <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                            <Grid Width="16" Height="16">
+                                <Path Data="M 3,10 L 9,4 Q 10,3 11,4 L 14,7 Q 15,8 14,9 L 8,14 Q 7,15 6,14 L 3,11 Q 2,10 3,10 Z M 6,13 L 12,7"
+                                      Stroke="{DynamicResource TextSecondary}" StrokeThickness="1.3"
+                                      Fill="Transparent" />
+                            </Grid>
+                            <TextBlock Text="{Binding [ClearSql]}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="LanguagePickerButton" Classes="languageSelector"
+                            Click="LanguagePicker_Click" ToolTip.Tip="{Binding [Language]}"
+                            AutomationProperties.Name="{Binding [Language]}">
+                        <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="7" VerticalAlignment="Center">
+                            <Border Width="25" Height="25" CornerRadius="8" Background="{DynamicResource AccentSoft}">
+                                <TextBlock Text="{Binding SelectedLanguage.DisplayCode}" Foreground="{DynamicResource Accent}"
+                                           FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Grid.Column="1" Text="⌄" Foreground="{DynamicResource TextMuted}"
+                                       FontSize="13" VerticalAlignment="Center" Margin="0,-3,0,0" />
+                        </Grid>
+                    </Button>
+                    <Button Classes="secondary" Width="38" Height="38" Padding="0"
+                            Command="{Binding ToggleThemeCommand}"
+                            ToolTip.Tip="{Binding [ThemeTooltip]}"
+                            AutomationProperties.Name="{Binding [ToggleTheme]}">
+                        <TextBlock Text="◐" Foreground="{DynamicResource Accent}" FontSize="16"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+        <Grid x:Name="WorkspaceGrid" Grid.Row="1" Margin="24,14,24,18">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" MaxHeight="220" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="400" MaxWidth="2400" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="*" MinWidth="400" MaxWidth="2400" />
+            </Grid.ColumnDefinitions>
+                <Border Grid.Row="0" Grid.Column="0" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1"
+                        CornerRadius="16" BoxShadow="0 6 22 0 #101B2A0C" DragDrop.AllowDrop="True"
+                        DragDrop.DragOver="InputQuery_DragOver" DragDrop.Drop="InputQuery_Drop">
+                    <Grid RowDefinitions="Auto,*">
+                        <Grid x:Name="InputHeader" ColumnDefinitions="Auto,*" Margin="18,13,16,12">
+                            <StackPanel x:Name="InputHeaderTitle" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                                <StackPanel Spacing="2" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding [InputTitle]}" Foreground="{DynamicResource TextPrimary}" FontSize="15" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding [InputSubtitle]}" Foreground="{DynamicResource TextMuted}" FontSize="11" />
+                                </StackPanel>
+                            </StackPanel>
+                            <WrapPanel x:Name="InputToolbar" Grid.Column="1" Orientation="Horizontal"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button Classes="secondary" Margin="0,0,8,4" Command="{Binding FormatCommand}"
+                                        IsEnabled="{Binding AreWorkspaceActionsEnabled}" ToolTip.Tip="{Binding [FormatTooltip]}"
+                                        AutomationProperties.Name="{Binding [FormatSql]}">
+                                    <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                        <Grid Width="16" Height="16">
+                                            <StackPanel Spacing="2" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <Border Width="12" Height="1.5" Background="{DynamicResource TextSecondary}" HorizontalAlignment="Left" />
+                                                <Border Width="8" Height="1.5" Background="{DynamicResource TextSecondary}" HorizontalAlignment="Left" />
+                                                <Border Width="10" Height="1.5" Background="{DynamicResource TextSecondary}" HorizontalAlignment="Left" />
+                                            </StackPanel>
+                                        </Grid>
+                                        <TextBlock x:Name="FormatButtonLabel" Text="{Binding [FormatSql]}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="secondary" Margin="0,0,8,4" Click="ToggleSearch_Click"
+                                        IsEnabled="{Binding AreWorkspaceActionsEnabled}" ToolTip.Tip="{Binding [FindTooltip]}"
+                                        AutomationProperties.Name="{Binding [Find]}">
+                                    <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                        <Grid Width="16" Height="16">
+                                            <Ellipse Width="9" Height="9" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                                     Margin="1,1,0,0" Stroke="{DynamicResource TextSecondary}" StrokeThickness="1.5" />
+                                            <Border Width="6" Height="1.5" Background="{DynamicResource TextSecondary}"
+                                                    HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,2">
+                                                <Border.RenderTransform>
+                                                    <RotateTransform Angle="45" />
+                                                </Border.RenderTransform>
+                                            </Border>
+                                        </Grid>
+                                        <TextBlock x:Name="FindButtonLabel" Text="{Binding [Find]}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="secondary" Margin="0,0,8,4" Padding="9,8" Click="SelectSqlFile_Click"
+                                        IsEnabled="{Binding AreWorkspaceActionsEnabled}"
+                                        ToolTip.Tip="{Binding [OpenSql]}" AutomationProperties.Name="{Binding [OpenSql]}">
+                                    <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                        <Grid Width="18" Height="18">
+                                            <Border Width="14" Height="10" BorderBrush="{DynamicResource TextSecondary}" BorderThickness="1.5"
+                                                    CornerRadius="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,2" />
+                                            <Border Width="6" Height="3" BorderBrush="{DynamicResource TextSecondary}" BorderThickness="1.5"
+                                                    CornerRadius="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="2,3,0,0" />
+                                            <Border Width="1.5" Height="6" Background="{DynamicResource TextSecondary}" HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center" Margin="0,1,0,0" />
+                                            <Border Width="6" Height="1.5" Background="{DynamicResource TextSecondary}" HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center" Margin="0,1,0,0" />
+                                        </Grid>
+                                        <TextBlock x:Name="OpenButtonLabel" Text="{Binding [OpenButton]}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="primary" Margin="0,0,8,4" Command="{Binding OptimizeCommand}"
+                                        IsEnabled="{Binding AreWorkspaceActionsEnabled}"
+                                        ToolTip.Tip="{Binding [OptimizeTooltip]}">
+                                    <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding [Optimize]}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </WrapPanel>
+                        </Grid>
+                        <Border Grid.Row="1" Margin="1,0,1,1" CornerRadius="0,0,13,13"
+                                BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="0,1,0,0" Background="{DynamicResource SurfaceSubtle}">
+                            <Grid RowDefinitions="Auto,Auto,*">
+                                <Border Padding="18,9" Background="{DynamicResource SurfaceMuted}">
+                                    <TextBlock Text="{Binding InputFileName}" Foreground="{DynamicResource TextMuted}" FontSize="10" FontWeight="Bold" />
+                                </Border>
+                                <Border Grid.Row="1" x:Name="SearchBar" IsVisible="False" Padding="12,6" Background="{DynamicResource SurfaceMuted}">
+                                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="6">
+                                        <TextBox x:Name="SearchBox" PlaceholderText="{Binding [FindPlaceholder]}" KeyDown="SearchBox_KeyDown" />
+                                        <Button Grid.Column="1" Classes="secondary" Content="↑" Click="FindPrevious_Click" ToolTip.Tip="{Binding [FindPrevious]}" />
+                                        <Button Grid.Column="2" Classes="secondary" Content="↓" Click="FindNext_Click" ToolTip.Tip="{Binding [FindNext]}" />
+                                        <Button Grid.Column="3" Classes="secondary" Content="×" Click="ToggleSearch_Click" ToolTip.Tip="{Binding [Close]}" />
+                                    </Grid>
+                                </Border>
+                                <ae:TextEditor x:Name="InputEditor" Grid.Row="2" IsVisible="{Binding IsInputEditorVisible}"
+                                               ShowLineNumbers="True" FontFamily="Cascadia Mono,Consolas,monospace" FontSize="13"
+                                               VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                                               Background="Transparent" Foreground="{DynamicResource TextCode}" />
+                                <ScrollViewer Grid.Row="2" x:Name="InputDiffScrollViewer" IsVisible="{Binding IsDiffVisible}"
+                                              ScrollChanged="DiffScrollViewer_ScrollChanged"
+                                              VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                    <ItemsControl ItemsSource="{Binding OriginalDiffLines}" Margin="16,12">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:DiffSideLineViewModel">
+                                                <Border Background="{Binding Background}" Padding="8,4" ToolTip.Tip="{Binding Tooltip}">
+                                                    <Grid ColumnDefinitions="38,*">
+                                                        <TextBlock Text="{Binding LineNumber}" Foreground="#91A0B3" FontSize="11" FontFamily="Cascadia Mono,Consolas,monospace" />
+                                                        <TextBlock Grid.Column="1" Text="{Binding Content}" Foreground="{Binding Foreground}" FontSize="12" FontFamily="Cascadia Mono,Consolas,monospace" TextWrapping="NoWrap" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="0" Grid.Column="2" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1"
+                        CornerRadius="16" BoxShadow="0 6 22 0 #101B2A0C">
+                    <Grid RowDefinitions="Auto,*">
+                        <Grid x:Name="OutputHeader" ColumnDefinitions="Auto,*" Margin="18,13,16,12">
+                            <StackPanel x:Name="OutputHeaderTitle" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                                <StackPanel Spacing="2" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding [ResultTitle]}" Foreground="{DynamicResource TextPrimary}" FontSize="15" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding [ResultSubtitle]}" Foreground="{DynamicResource TextMuted}" FontSize="11" />
+                                </StackPanel>
+                            </StackPanel>
+                            <WrapPanel x:Name="OutputToolbar" Grid.Column="1" Orientation="Horizontal"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center">
+
+                                <Button x:Name="CopyBtn" Classes="secondary" Margin="0,0,8,4"
+                                        Click="CopyOptimizedSql_Click" IsEnabled="{Binding CanUseOutputActions}"
+                                        ToolTip.Tip="{Binding [CopySql]}" AutomationProperties.Name="{Binding [CopySql]}">
+                                    <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                    <Grid Width="18" Height="18">
+                                        <Border Width="10" Height="12" BorderBrush="{DynamicResource TextSecondary}" BorderThickness="1.5"
+                                                CornerRadius="2" HorizontalAlignment="Right" VerticalAlignment="Top" />
+                                        <Border Width="10" Height="12" BorderBrush="{DynamicResource TextSecondary}" BorderThickness="1.5"
+                                                CornerRadius="2" Background="{DynamicResource SurfaceMuted}" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
+                                    </Grid>
+                                    <TextBlock x:Name="CopyButtonLabel" Text="{Binding [CopyButton]}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="EditOptimizedSqlBtn" Classes="secondary" Margin="0,0,8,4"
+                                        Command="{Binding ToggleOutputEditingCommand}" IsEnabled="{Binding CanUseOutputActions}"
+                                        ToolTip.Tip="{Binding EditActionName}" AutomationProperties.Name="{Binding EditActionName}">
+                                    <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                    <Grid Width="18" Height="18">
+                                        <TextBlock Text="✎" Foreground="{DynamicResource TextSecondary}" FontSize="16"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <Border Width="19" Height="1.5" Background="{DynamicResource Danger}"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                IsVisible="{Binding IsEditSlashVisible}">
+                                            <Border.RenderTransform>
+                                                <RotateTransform Angle="-45" />
+                                            </Border.RenderTransform>
+                                        </Border>
+                                    </Grid>
+                                    <TextBlock x:Name="EditButtonLabel" Text="{Binding [EditButton]}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="SaveOptimizedSqlBtn" Classes="secondary" Margin="0,0,8,4"
+                                        Click="SaveOptimizedSql_Click" IsEnabled="{Binding CanUseOutputActions}"
+                                        ToolTip.Tip="{Binding [SaveSql]}" AutomationProperties.Name="{Binding [SaveSql]}">
+                                    <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                                    <Grid Width="18" Height="18">
+                                        <Border Width="14" Height="15" BorderBrush="{DynamicResource TextSecondary}" BorderThickness="1.5"
+                                                CornerRadius="2" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <Border Width="8" Height="5" BorderBrush="{DynamicResource TextSecondary}" BorderThickness="1.5"
+                                                CornerRadius="1" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,2,0,0" />
+                                        <Border Width="8" Height="4" BorderBrush="{DynamicResource TextSecondary}" BorderThickness="1.5"
+                                                CornerRadius="1" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,2" />
+                                    </Grid>
+                                    <TextBlock x:Name="SaveButtonLabel" Text="{Binding [SaveButton]}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="secondary" Margin="0,0,8,4"
+                                        Command="{Binding TogglePreviewCommand}" IsEnabled="{Binding CanPreviewChanges}"
+                                        ToolTip.Tip="{Binding PreviewButtonTooltip}"
+                                        AutomationProperties.Name="{Binding PreviewButtonText}">
+                                    <TextBlock Text="{Binding PreviewButtonText}" VerticalAlignment="Center" />
+                                </Button>
+                            </WrapPanel>
+                        </Grid>
+                        <Grid Grid.Row="1" Margin="1,0,1,1">
+                            <Border CornerRadius="0" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="0,1,0,0" Background="{DynamicResource SurfaceSubtle}">
+                                <Grid RowDefinitions="Auto,*">
+                                    <Border Padding="18,9" Background="{DynamicResource SurfaceMuted}">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Text="{Binding OptimizedFileName}" Foreground="{DynamicResource TextMuted}" FontSize="10" FontWeight="Bold" />
+                                            <TextBlock Grid.Column="1" IsVisible="{Binding IsUnsaved}"
+                                                       Text="{Binding [Unsaved]}" Foreground="{DynamicResource WarningText}"
+                                                       FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                    <Grid Grid.Row="1">
+                                        <ae:TextEditor x:Name="OutputEditor" IsReadOnly="{Binding IsOutputReadOnly}" IsVisible="{Binding IsOptimizedEditorVisible}"
+                                                       ShowLineNumbers="True" FontFamily="Cascadia Mono,Consolas,monospace"
+                                                       VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                                                       FontSize="13" Background="Transparent" Foreground="{DynamicResource TextCode}" />
+                                        <Border IsVisible="{Binding IsDiffVisible}" Background="{DynamicResource SurfaceSubtle}">
+                                            <ScrollViewer x:Name="OutputDiffScrollViewer" ScrollChanged="DiffScrollViewer_ScrollChanged"
+                                                          VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                                <ItemsControl ItemsSource="{Binding OptimizedDiffLines}" Margin="16,12">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="vm:DiffSideLineViewModel">
+                                                            <Border Background="{Binding Background}" Padding="8,4"
+                                                                    ToolTip.Tip="{Binding Tooltip}">
+                                                                <Grid ColumnDefinitions="38,*">
+                                                                    <TextBlock Text="{Binding LineNumber}" Foreground="#91A0B3" FontSize="11"
+                                                                               FontFamily="Cascadia Mono,Consolas,monospace"
+                                                                               VerticalAlignment="Center" />
+                                                                    <TextBlock Grid.Column="1" Text="{Binding Content}" Foreground="{Binding Foreground}"
+                                                                               FontSize="12" FontFamily="Cascadia Mono,Consolas,monospace"
+                                                                               TextWrapping="NoWrap" />
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </ScrollViewer>
+                                        </Border>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Border>
+                <Border Grid.Row="0" Grid.Column="1" Width="2" Background="{DynamicResource Border}" CornerRadius="1"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" />
+                <GridSplitter Grid.Row="0" Grid.Column="1" Classes="paneSplitter" MinWidth="12" MaxWidth="12"
+                              ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"
+                              Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                <GridSplitter Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                              Classes="paneSplitter" Height="12" MinHeight="12" MaxHeight="12"
+                              ResizeDirection="Rows" ResizeBehavior="PreviousAndNext"
+                              Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" IsVisible="{Binding IsDiffVisible}"
+                        Background="{DynamicResource SurfaceMuted}" BorderBrush="{DynamicResource Border}"
+                        BorderThickness="1" Padding="18,12" CornerRadius="14" ClipToBounds="True">
+                    <Grid RowDefinitions="Auto,*" RowSpacing="7">
+                        <TextBlock Text="{Binding RewriteSummary}" Foreground="{DynamicResource TextPrimary}"
+                                   FontSize="12" FontWeight="SemiBold" />
+                        <ScrollViewer Grid.Row="1" MaxHeight="160" VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding RewriteReviews}" HorizontalAlignment="Stretch">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <primitives:UniformGrid Columns="4" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:RewriteReviewViewModel">
+                                        <Border Margin="0,0,8,6" Padding="10,7"
+                                                HorizontalAlignment="Stretch"
+                                                Background="{DynamicResource SurfaceSubtle}"
+                                                BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1"
+                                                CornerRadius="9">
+                                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                                <StackPanel Spacing="3" VerticalAlignment="Center" ToolTip.Tip="{Binding Tooltip}">
+                                                    <TextBlock Text="{Binding Title}" Foreground="{DynamicResource Accent}"
+                                                               FontSize="11" TextWrapping="Wrap" />
+                                                    <TextBlock Text="{Binding RuleLocation}" Foreground="{DynamicResource TextMuted}"
+                                                               FontSize="9" />
+                                                    <TextBlock Text="{Binding ReviewLabel}"
+                                                               Foreground="{DynamicResource TextMuted}" FontSize="9" />
+                                                    <TextBlock Text="{Binding WhySummary}" Foreground="{DynamicResource TextSecondary}"
+                                                               FontSize="11" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Foreground="{DynamicResource TextMuted}" FontSize="10"
+                                                               TextTrimming="CharacterEllipsis">
+                                                        <Run Text="{Binding BeforeSummary}" /><Run Text="  &#x2192;  " /><Run Text="{Binding AfterSummary}" />
+                                                    </TextBlock>
+                                                </StackPanel>
+                                                <Button Grid.Column="1" Classes="secondary" Padding="10,4" FontSize="10"
+                                                        VerticalAlignment="Center"
+                                                        Content="{Binding ActionText}" Command="{Binding ToggleCommand}" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+                <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" IsVisible="{Binding IsPerformanceNotesVisible}"
+                        Background="{DynamicResource SurfaceMuted}" BorderBrush="{DynamicResource Border}"
+                        BorderThickness="1" Padding="18,12" CornerRadius="14" ClipToBounds="True">
+                    <Grid RowDefinitions="Auto,*" RowSpacing="7">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="{Binding [PerformanceNotes]}" Foreground="{DynamicResource TextPrimary}"
+                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            <Button Grid.Column="1" Classes="secondary" Padding="8,4" Content="{Binding [CopyNotes]}"
+                                    IsEnabled="{Binding AreWorkspaceActionsEnabled}"
+                                    Click="CopyPerformanceNotes_Click" ToolTip.Tip="{Binding [CopyNotesTooltip]}" />
+                        </Grid>
+                        <ScrollViewer Grid.Row="1" MaxHeight="160" VerticalScrollBarVisibility="Auto">
+                            <TextBlock Text="{Binding Findings}" Foreground="{DynamicResource TextSecondary}"
+                                       FontSize="11" LineHeight="17" TextWrapping="Wrap" />
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+        </Grid>
+
+        <Border Grid.Row="2" Background="{DynamicResource FooterBackground}" BorderBrush="{DynamicResource Border}" BorderThickness="0,1,0,0" Padding="32,11">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Ellipse Width="7" Height="7" Fill="{DynamicResource Accent}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Status}" Foreground="{DynamicResource TextSecondary}" FontSize="11" VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="{Binding [Footer]}" Foreground="{DynamicResource TextMuted}" FontSize="10" VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

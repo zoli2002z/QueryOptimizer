@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>icon\query_optimizer_icon.ico</ApplicationIcon>
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' != '' and !$([System.IO.Path]::IsPathRooted('$(NuGetPackageRoot)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(NuGetPackageRoot)'))\</NuGetPackageRoot>
+    <AvaloniaBuildTasksLocation Condition="'$(AvaloniaBuildTasksLocation)' == ''">$(NuGetPackageRoot)avalonia\12.1.4\tools\netstandard2.0\Avalonia.Build.Tasks.dll</AvaloniaBuildTasksLocation>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,9 +15,11 @@
     <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.4" />
+    <PackageReference Include="Avalonia.AvaloniaEdit" Version="12.0.0" />
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="SqlParser.Net" Version="1.1.23" />
   </ItemGroup>
 </Project>

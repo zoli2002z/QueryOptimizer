@@ -1,0 +1,10 @@
+using System.Collections.Generic;
+using QueryOptimizer.Optimization;
+
+namespace QueryOptimizer.Presentation.ViewModels;
+
+public interface IDiffPreviewMapper
+{
+    IReadOnlyList<DiffLineViewModel> Map(OptimizationResult result, string language = "en");
+    (IReadOnlyList<DiffSideLineViewModel> Original, IReadOnlyList<DiffSideLineViewModel> Optimized) MapSideBySide(OptimizationResult result, string language = "en");
+}
